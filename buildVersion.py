@@ -32,5 +32,5 @@ def find_and_replace(target, version, pattern):
 
 print "[Waveface] Replace version to {0}".format(sys.argv[1])
 for filename in MANIFEST_FILES:
-    find_and_replace(os.join(repo_dir, filename), sys.argv[1], VER_PATTERN)
+    find_and_replace(os.path.join(repo_dir, filename), sys.argv[1], VER_PATTERN)
 print "[Waveface] Version replacement done."
