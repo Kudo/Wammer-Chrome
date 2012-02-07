@@ -1,0 +1,19 @@
+{
+    "name": "Save To Waveface",
+    "version": "0.1",
+    "default_locale": "en",
+    "background_page": "background.html",
+    "permissions": [
+    "tabs", "http://*/*", "https://*/*", "contextMenus"
+    ],
+    "description": "__MSG_extDesc__",
+    "icons": {
+        "128": "waveface_icon_128.png",
+        "48": "waveface_icon_48.png"
+    },
+    "browser_action": {
+        "default_title": "Save To Waveface",
+        "default_icon": "waveface_icon_48.png"
+    },
+    "options_page": "fancy-settings/source/index.html"
+}
