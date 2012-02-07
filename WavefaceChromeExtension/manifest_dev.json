@@ -15,5 +15,6 @@
     "browser_action": {
         "default_title": "Save To Waveface",
         "default_icon": "waveface_icon_48.png"
-    }
+    },
+    "update_url": "http://develop.waveface.com:4343/extensions/chrome/updates_dev.xml"
 }

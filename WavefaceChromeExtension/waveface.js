@@ -16,12 +16,12 @@ function runBookmarklet(tab) {
   );
 }
 
-// develop site
 chrome.browserAction.onClicked.addListener(runBookmarklet);
-chrome.contextMenus.create({"title": "Save to Waveface", "contexts": ["link", "image"], "onclick": runBookmarklet},
-  function() {
-    if (chrome.extension.lastError) {
-      console.log("Unable to create context menu: " + chrome.extension.lastError.message);
-    }
-  }
-);
+
+// chrome.contextMenus.create({"title": "Save to Waveface", "contexts": ["link", "image"], "onclick": runBookmarklet},
+//   function() {
+//     if (chrome.extension.lastError) {
+//       console.log("Unable to create context menu: " + chrome.extension.lastError.message);
+//     }
+//   }
+// );

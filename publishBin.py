@@ -11,6 +11,8 @@ if __name__ == "__main__":
     os.mkdir(version)
     shutil.copy2('{0}\\development-WavefaceChromeExtension-{1}.crx'.format(repo_dir, version), version)
     shutil.copy2('{0}\\production-WavefaceChromeExtension-{1}.crx'.format(repo_dir, version), version)
+    shutil.copy2('{0}\\updates.xml'.format(repo_dir), version)
+    shutil.copy2('{0}\\updates_dev.xml'.format(repo_dir), version)
     ftp = FTP("WF-NAS", "admin", "waveface")
     ftp.mkd("Users/WavefaceChromeExtension/Builds/{0}".format(version))
     ftp.cwd("Users/WavefaceChromeExtension/Builds/{0}".format(version))

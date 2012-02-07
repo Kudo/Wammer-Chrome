@@ -10,18 +10,19 @@ from os import remove, close
 repo_dir = os.path.dirname(os.path.abspath(__file__))
 
 MANIFEST_FILES = ['WavefaceChromeExtension/manifest.json', 'WavefaceChromeExtension/manifest_dev.json']
-VER_PATTERN = re.compile('"version": "0.1"')
+MANIFEST_VER_PATTERN = re.compile('"version": "0.1"')
+
+UPDATEXML_FILES = ['updates.xml', 'updates_dev.xml']
+UPDATEXML_VER_PATTERN = re.compile("version='0.1'")
 
 
-def find_and_replace(target, version, pattern):
-    version = '"version": "{0}"'.format(version)
-
+def find_and_replace(target, newstr, pattern):
     fh, abs_path = mkstemp()
     new_file = open(abs_path, 'w')
     old_file = open(target)
 
     for line in old_file:
-        new_line = pattern.sub(version, line)
+        new_line = pattern.sub(newstr, line)
         new_file.write(new_line)
     new_file.close()
     close(fh)
@@ -32,5 +33,9 @@ def find_and_replace(target, version, pattern):
 
 print "[Waveface] Replace version to {0}".format(sys.argv[1])
 for filename in MANIFEST_FILES:
-    find_and_replace(os.path.join(repo_dir, filename), sys.argv[1], VER_PATTERN)
+    newstr = '"version": "{0}"'.format(sys.argv[1])
+    find_and_replace(os.path.join(repo_dir, filename), newstr, MANIFEST_VER_PATTERN)
+for filename in UPDATEXML_FILES:
+    newstr = "version='{0}'".format(sys.argv[1])
+    find_and_replace(os.path.join(repo_dir, filename), newstr, UPDATEXML_VER_PATTERN)
 print "[Waveface] Version replacement done."
