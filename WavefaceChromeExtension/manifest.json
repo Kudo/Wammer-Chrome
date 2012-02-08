@@ -4,7 +4,7 @@
     "default_locale": "en",
     "background_page": "background.html",
     "permissions": [
-    "tabs", "http://*/*", "https://*/*", "contextMenus"
+        "tabs", "http://*/*", "https://*/*", "contextMenus"
     ],
     "description": "__MSG_extDesc__",
     "icons": {
