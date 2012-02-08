@@ -4,10 +4,13 @@ function runBookmarklet(tab) {
   var bookmarkletUrl;
   
   if (endpoint == "development") {
-    bookmarkletUrl = "javascript:(function(){ISRIL_H='c183';ISRIL_SCRIPT=document.createElement('SCRIPT');ISRIL_SCRIPT.type='text/javascript';ISRIL_SCRIPT.src='http://develop.waveface.com:8000/js/b.js';document.getElementsByTagName('head')[0].appendChild(ISRIL_SCRIPT)})();";
+    bookmarkletUrl = "javascript:(function(){ISRIL_H='c183';ISRIL_SCRIPT=document.createElement('SCRIPT');ISRIL_SCRIPT.type='text/javascript';ISRIL_SCRIPT.src='http://develop.waveface.com:4343/static/js/bookmarklet.js';document.getElementsByTagName('head')[0].appendChild(ISRIL_SCRIPT)})();";
+  }
+  else if (endpoint == "staging") {
+    bookmarkletUrl = "javascript:(function(){ISRIL_H='c183';ISRIL_SCRIPT=document.createElement('SCRIPT');ISRIL_SCRIPT.type='text/javascript';ISRIL_SCRIPT.src='http://staging.waveface.com/static/js/bookmarklet.js';document.getElementsByTagName('head')[0].appendChild(ISRIL_SCRIPT)})();"; 
   }
   else if (endpoint == "production") {
-    bookmarkletUrl = "javascript:(function(){ISRIL_H='c183';ISRIL_SCRIPT=document.createElement('SCRIPT');ISRIL_SCRIPT.type='text/javascript';ISRIL_SCRIPT.src='http://develop.waveface.com:8000/js/b2.js';document.getElementsByTagName('head')[0].appendChild(ISRIL_SCRIPT)})();";
+    bookmarkletUrl = "javascript:(function(){ISRIL_H='c183';ISRIL_SCRIPT=document.createElement('SCRIPT');ISRIL_SCRIPT.type='text/javascript';ISRIL_SCRIPT.src='https://waveface.com/static/js/bookmarklet.js';document.getElementsByTagName('head')[0].appendChild(ISRIL_SCRIPT)})();";
   }
 
   chrome.tabs.update(

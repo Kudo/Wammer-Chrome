@@ -21,6 +21,10 @@ this.i18n = {
         "en": "Production",
         "zh-tw": "Production"
     },
+    "staging": {
+        "en": "Staging",
+        "zh-tw": "Staging"
+    },
     "development": {
         "en": "Development",
         "zh-tw": "Development"

@@ -10,6 +10,7 @@ this.manifest = {
             "type": "radioButtons",
             "options": [
                 ["production", i18n.get("production")],
+                ["staging", i18n.get("staging")],
                 ["development", i18n.get("development")]
             ]
         }
