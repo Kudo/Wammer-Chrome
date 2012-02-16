@@ -1,10 +1,10 @@
 {
-    "name": "Save To Waveface",
+    "name": "Waveface Web Clipper",
     "version": "0.1",
     "default_locale": "en",
     "background_page": "background.html",
     "permissions": [
-        "tabs", "http://*/*", "https://*/*", "contextMenus"
+        "tabs", "http://*/*", "https://*/*"
     ],
     "description": "__MSG_extDesc__",
     "icons": {
@@ -12,8 +12,7 @@
         "48": "waveface_icon_48.png"
     },
     "browser_action": {
-        "default_title": "Save To Waveface",
+        "default_title": "Waveface Web Clipper",
         "default_icon": "waveface_icon_48.png"
-    },
-    "update_url": "https://waveface.com/extensions/chrome/updates.xml"
+    }
 }
