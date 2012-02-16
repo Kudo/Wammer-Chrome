@@ -2,6 +2,7 @@ REM ======================================
 REM = Check out files                     
 REM ======================================
 set HOME=d:\Home\shawnliang
+set VERSION=0.1.%BUILD_NUMBER%
 cd "%WORKSPACE%\Wammer-Chrome"
 "c:\Program Files (x86)\Git\bin\git.exe" clean -d -f
 "c:\Program Files (x86)\Git\bin\git.exe" reset --hard
@@ -10,14 +11,14 @@ cd "%WORKSPACE%\Wammer-Chrome"
 REM ==========================
 REM === Write version info ===
 REM ==========================
-python -u buildVersion.py 0.1.%BUILD_NUMBER%
+python -u buildVersion.py %VERSION%
 
 REM ===========================
 REM == Build Product Version ==
 REM ===========================
 "C:\Users\ShawnLiang\AppData\Local\Google\Chrome\Application\chrome.exe" --no-message-box --pack-extension="%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension" --pack-extension-key="%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension.pem"
 
-ren "%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension.crx" "production-WavefaceChromeExtension-0.1.%BUILD_NUMBER%.crx"
+ren "%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension.crx" "production-WavefaceChromeExtension-%VERSION%.crx"
 IF NOT %ERRORLEVEL% == 0 (exit /b %ERRORLEVEL%)
 
 REM ===========================
@@ -37,16 +38,16 @@ IF NOT %ERRORLEVEL% == 0 (exit /b %ERRORLEVEL%)
 
 "C:\Users\ShawnLiang\AppData\Local\Google\Chrome\Application\chrome.exe" --no-message-box --pack-extension="%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension" --pack-extension-key="%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension.pem"
 
-ren "%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension.crx" "development-WavefaceChromeExtension-0.1.%BUILD_NUMBER%.crx"
+ren "%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension.crx" "development-WavefaceChromeExtension-%VERSION%.crx"
 IF NOT %ERRORLEVEL% == 0 (exit /b %ERRORLEVEL%)
 
 REM ================================
 REM == Publish to Develop Website ==
 REM ================================
-"C:\Program Files (x86)\WinSCP\WinSCP.exe" /console /command "open wammer@develop.waveface.com" "put development-WavefaceChromeExtension-0.1.%BUILD_NUMBER%.crx ./static/extensions/chrome/WavefaceChromeExtension.crx" "close" "exit"
+"C:\Program Files (x86)\WinSCP\WinSCP.exe" /console /command "open wammer@develop.waveface.com" "put development-WavefaceChromeExtension-%VERSION%.crx ./static/extensions/chrome/WavefaceChromeExtension.crx" "close" "exit"
 "C:\Program Files (x86)\WinSCP\WinSCP.exe" /console /command "open wammer@develop.waveface.com" "put updates_dev.xml ./static/extensions/chrome/updates_dev.xml" "close" "exit"
 
 REM ============================
 REM ===== Backup to WF-NAS =====
 REM ============================
-python -u publishBin.py 0.1.%BUILD_NUMBER%
+python -u publishBin.py %VERSION%
