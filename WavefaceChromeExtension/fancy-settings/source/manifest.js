@@ -1,6 +1,6 @@
 // SAMPLE
 this.manifest = {
-    "name": "Save To Waveface",
+    "name": "Waveface Web Clipper",
     "icon": "../../waveface_icon_128.png",
     "settings": [
         {
