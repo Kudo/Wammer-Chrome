@@ -2,7 +2,7 @@ REM ======================================
 REM = Check out files                     
 REM ======================================
 set HOME=d:\Home\shawnliang
-set VERSION=0.1.%BUILD_NUMBER%
+set VERSION=1.0.%BUILD_NUMBER%
 cd "%WORKSPACE%\Wammer-Chrome"
 "c:\Program Files (x86)\Git\bin\git.exe" clean -d -f
 "c:\Program Files (x86)\Git\bin\git.exe" reset --hard

@@ -1,6 +1,6 @@
 {
     "name": "Waveface Web Clipper",
-    "version": "0.1",
+    "version": "1.0",
     "default_locale": "en",
     "background_page": "background.html",
     "permissions": [

@@ -10,10 +10,10 @@ from os import remove, close
 repo_dir = os.path.dirname(os.path.abspath(__file__))
 
 MANIFEST_FILES = ['WavefaceChromeExtension/manifest.json', 'WavefaceChromeExtension/manifest_dev.json']
-MANIFEST_VER_PATTERN = re.compile('"version": "0.1"')
+MANIFEST_VER_PATTERN = re.compile('"version": "1.0"')
 
 UPDATEXML_FILES = ['updates.xml', 'updates_dev.xml']
-UPDATEXML_VER_PATTERN = re.compile("version='0.1'")
+UPDATEXML_VER_PATTERN = re.compile("version='1.0'")
 
 
 def find_and_replace(target, newstr, pattern):

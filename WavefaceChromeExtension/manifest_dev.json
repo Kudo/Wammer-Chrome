@@ -1,6 +1,6 @@
 {
     "name": "Waveface Web Clipper (Dev)",
-    "version": "0.1",
+    "version": "1.0",
     "default_locale": "en",
     "options_page": "fancy-settings/source/index.html",
     "background_page": "background.html",
