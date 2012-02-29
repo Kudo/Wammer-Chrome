@@ -14,6 +14,11 @@ REM ==========================
 python -u buildVersion.py %VERSION%
 
 REM ===========================
+REM ===== Compress to ZIP =====
+REM ===========================
+"C:\Program Files\7-Zip\7z.exe" a -tzip "%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension.zip" "%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension"
+
+REM ===========================
 REM == Build Product Version ==
 REM ===========================
 "C:\Users\ShawnLiang\AppData\Local\Google\Chrome\Application\chrome.exe" --no-message-box --pack-extension="%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension" --pack-extension-key="%WORKSPACE%\Wammer-Chrome\WavefaceChromeExtension.pem"
