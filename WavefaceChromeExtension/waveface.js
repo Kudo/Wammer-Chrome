@@ -1,3 +1,25 @@
+function installNotice() {
+  if (localStorage.getItem("install_time")) {
+    return;
+  }
+
+  var now = new Date().getTime();
+  localStorage.setItem("install_time", now);
+
+  var endpoint = settings.get("endpoints");
+
+  if (endpoint == "development") {
+    chrome.tabs.create(url: "http://develop.waveface.com:4343/products/download");
+  }
+  else if (endpoint == "staging")
+  {
+    chrome.tabs.create(url: "http://staging.waveface.com/products/download");
+  }
+  else if (endpoint == "production")
+  {
+    chrome.tabs.create(url: "https://waveface.com/products/download");
+  }
+}
 
 function runBookmarklet(tab) {
   var endpoint = settings.get("endpoints");
@@ -21,10 +43,4 @@ function runBookmarklet(tab) {
 
 chrome.browserAction.onClicked.addListener(runBookmarklet);
 
-// chrome.contextMenus.create({"title": "Save to Waveface", "contexts": ["link", "image"], "onclick": runBookmarklet},
-//   function() {
-//     if (chrome.extension.lastError) {
-//       console.log("Unable to create context menu: " + chrome.extension.lastError.message);
-//     }
-//   }
-// );
+installNotice()
