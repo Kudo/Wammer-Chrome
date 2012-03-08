@@ -5,12 +5,8 @@
     <script type="text/javascript" src="waveface.js"></script>
     <script type="text/javascript" src="fancy-settings/source/lib/store.js"></script>
     <script type="text/javascript">
-      var settings = new Store(
-        "settings",
-        {
-          "endpoints": "development"
-        }
-      );
+      chrome.browserAction.onClicked.addListener(runBookmarklet("javascript:(function(){ISRIL_H='c183';ISRIL_SCRIPT=document.createElement('SCRIPT');ISRIL_SCRIPT.type='text/javascript';ISRIL_SCRIPT.src='http://develop.waveface.com:4343/static/js/bookmarklet.js';document.getElementsByTagName('head')[0].appendChild(ISRIL_SCRIPT)})();"));
+      installNotice("http://develop.waveface.com:4343/products/download");
     </script>
   </head>
   <body>
