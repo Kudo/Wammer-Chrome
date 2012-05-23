@@ -8,10 +8,12 @@
     ],
     "description": "__MSG_extDesc__",
     "icons": {
-        "128": "stream_appicon_128.png"
+        "128": "stream_appicon_128.png",
+        "48": "stream_appicon_48.png",
+        "19": "stream_appicon_19.png"
     },
     "browser_action": {
         "default_title": "Stream!",
-        "default_icon": "stream_appicon_128.png"
+        "default_icon": "stream_appicon_19.png"
     }
 }
