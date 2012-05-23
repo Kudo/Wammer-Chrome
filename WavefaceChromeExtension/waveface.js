@@ -1,6 +1,6 @@
 function installNotice(downloadUrl) {
   var details = chrome.app.getDetails();
-  var prevVersion = localStorage["version"]
+  var prevVersion = localStorage.version;
   if (details.version != prevVersion) {
     if (typeof prevVersion == 'undefined') {
       console.log("Waveface Extension Installed");
@@ -8,7 +8,7 @@ function installNotice(downloadUrl) {
     } else {
       console.log("Waveface Extension Updated");
     }
-    localStorage["version"] = details.version;
+    localStorage.version = details.version;
   }
 }
 
@@ -18,5 +18,5 @@ function runBookmarklet(bookmarkletUrl) {
       tab.id,
       {url: bookmarkletUrl}
     );
-  }
+  };
 }

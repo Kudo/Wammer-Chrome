@@ -1,5 +1,5 @@
 {
-    "name": "Waveface Web Clipper",
+    "name": "Stream!",
     "version": "1.0",
     "default_locale": "en",
     "background_page": "background.html",
@@ -8,11 +8,10 @@
     ],
     "description": "__MSG_extDesc__",
     "icons": {
-        "128": "waveface_icon_128.png",
-        "48": "waveface_icon_48.png"
+        "128": "stream_appicon_128.png"
     },
     "browser_action": {
-        "default_title": "Waveface Web Clipper",
-        "default_icon": "waveface_icon_48.png"
+        "default_title": "Stream!",
+        "default_icon": "stream_appicon_128.png"
     }
 }
