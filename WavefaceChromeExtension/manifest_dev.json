@@ -16,5 +16,5 @@
         "default_title": "Stream! (Dev)",
         "default_icon": "stream_appicon_19.png"
     },
-    "update_url": "http://develop.waveface.com:4343/extensions/chrome/updates_dev.xml"
+    "update_url": "https://devweb.waveface.com/extensions/chrome/updates_dev.xml"
 }
