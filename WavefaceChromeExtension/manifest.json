@@ -1,8 +1,9 @@
 {
     "name": "Stream!",
-    "version": "1.0",
+    "version": "__VERSION__",
     "default_locale": "en",
     "background_page": "background.html",
+    "minimum_chrome_version": "13",
     "permissions": [
         "tabs", "http://*/*", "https://*/*"
     ],

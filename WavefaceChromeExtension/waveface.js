@@ -14,9 +14,6 @@ function installNotice(downloadUrl) {
 
 function runBookmarklet(bookmarkletUrl) {
   return function(tab) {
-    chrome.tabs.update(
-      tab.id,
-      {url: bookmarkletUrl}
-    );
+    chrome.tabs.executeScript(tab.id, {file: bookmarkletUrl});
   };
 }

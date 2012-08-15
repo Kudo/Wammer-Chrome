@@ -1,8 +1,9 @@
 {
     "name": "Stream! (Dev)",
-    "version": "1.0",
+    "version": "__VERSION__",
     "default_locale": "en",
     "background_page": "background.html",
+    "minimum_chrome_version": "13",
     "permissions": [
         "tabs", "http://*/*", "https://*/*"
     ],
@@ -16,5 +17,5 @@
         "default_title": "Stream! (Dev)",
         "default_icon": "stream_appicon_19.png"
     },
-    "update_url": "https://devweb.waveface.com/extensions/chrome/updates_dev.xml"
+    "update_url": "__WFLINK__/extensions/chrome/updates_dev.xml"
 }
