@@ -1,5 +1,5 @@
 {
-    "name": "Pinstream! (Dev)",
+    "name": "Stream Photo Collector (Dev)",
     "version": "__VERSION__",
     "default_locale": "en",
     "background_page": "background.html",
@@ -14,7 +14,7 @@
         "19": "stream_appicon_19.png"
     },
     "browser_action": {
-        "default_title": "Pinstream! (Dev)",
+        "default_title": "Stream Photo Collector (Dev)",
         "default_icon": "stream_appicon_19.png"
     },
     "update_url": "__WFLINK__/extensions/chrome/updates_dev.xml"

@@ -25,9 +25,9 @@ function build_crx {
     env=$4
     dev=$5
 
-    procDir="$env-WavefaceChromeExtension"
+    procDir="$env-WavefaceStreamPhotoCollector"
     rm -rf $procDir
-    cp -a  WavefaceChromeExtension $procDir
+    cp -a  WavefaceStreamPhotoCollector $procDir
 
     replace_tag "$procDir/background.html" '__WFLINK__' $wflink
 
@@ -42,17 +42,17 @@ function build_crx {
     replace_tag "$procDir/manifest.json" '__VERSION__' $version
     replace_tag "$procDir/manifest.json" '__WFLINK__' $wflink
 
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --no-message-box --pack-extension="$procDir" --pack-extension-key="WavefaceChromeExtension.pem"
-    mv -f "$procDir.crx" "output/$env-WavefaceChromeExtension-$version.crx"
+    crxmake --pack-extension="$procDir" --pack-extension-key="PhotoCollector$dev.pem"
+    mv -f "$procDir.crx" "output/$env-WavefaceStreamPhotoCollector-$version.crx"
 
 }
 
 rm -rf output
 
 mkdir -p output
-build_crx 'support@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' ''
-build_crx 'develop@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev'
-build_crx 'support@waveface.com' 'https:\/\/waveface.com' $version 'production' ''
+build_crx 'support.PhotoCollector@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' ''
+build_crx 'develop.PhotoCollector@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev'
+build_crx 'support.PhotoCollector@waveface.com' 'https:\/\/waveface.com' $version 'production' ''
 
 cp -f updates.xml output/
 cp -f updates_dev.xml output/
