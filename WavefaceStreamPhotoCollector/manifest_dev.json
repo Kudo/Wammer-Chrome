@@ -17,5 +17,5 @@
         "default_title": "Stream Photo Collector (Dev)",
         "default_icon": "stream_appicon_19.png"
     },
-    "update_url": "__WFLINK__/extensions/chrome/updates_dev.xml"
+    "update_url": "http://develop.waveface.com:4343/extensions/chrome/WavefaceStreamPhotoCollector/updates_dev.xml"
 }
