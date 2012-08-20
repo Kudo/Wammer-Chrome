@@ -9,13 +9,13 @@
     ],
     "description": "__MSG_extDesc__",
     "icons": {
-        "128": "stream_appicon_128.png",
-        "48": "stream_appicon_48.png",
-        "19": "stream_appicon_19.png"
+        "128": "StreamPhotoCollector_128.png",
+        "48": "StreamPhotoCollector_48.png",
+        "19": "StreamPhotoCollector_19.png"
     },
     "browser_action": {
         "default_title": "Stream Photo Collector (Dev)",
-        "default_icon": "stream_appicon_19.png"
+        "default_icon": "StreamPhotoCollector_19.png"
     },
     "update_url": "http://develop.waveface.com:4343/extensions/chrome/WavefaceStreamPhotoCollector/updates_dev.xml"
 }
