@@ -17,3 +17,6 @@ function runBookmarklet(bookmarkletUrl) {
     chrome.tabs.executeScript(tab.id, {file: bookmarkletUrl});
   };
 }
+
+chrome.browserAction.onClicked.addListener(runBookmarklet("clipper.js"));
+installNotice("__WFLINK__/StreamPhotoCollector/welcome");

@@ -29,7 +29,7 @@ function build_crx {
     rm -rf $procDir
     cp -a  WavefaceStreamPhotoCollector $procDir
 
-    replace_tag "$procDir/background.html" '__WFLINK__' $wflink
+    replace_tag "$procDir/waveface.js" '__WFLINK__' $wflink
 
     replace_tag "$procDir/clipper.js" '__WFLINK__' $wflink
     replace_tag "$procDir/clipper.js" '__VERSION__' $version

@@ -1,8 +1,11 @@
 {
     "name": "Stream Photo Collector (Dev)",
     "version": "__VERSION__",
+    "manifest_version": 2,
     "default_locale": "en",
-    "background_page": "background.html",
+    "background": {
+	"scripts": ["waveface.js"]
+    },
     "minimum_chrome_version": "13",
     "permissions": [
         "tabs", "http://*/*", "https://*/*"
