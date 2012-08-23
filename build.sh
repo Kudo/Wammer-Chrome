@@ -25,14 +25,12 @@ function build_crx {
     env=$4
     dev=$5
 
-    procDir="$env-WavefaceStreamPhotoCollector"
+    procDir="$env-WavefaceStreamPortal"
     rm -rf $procDir
-    cp -a  WavefaceStreamPhotoCollector $procDir
+    cp -a  WavefaceStreamPortal $procDir
 
-    replace_tag "$procDir/background.html" '__WFLINK__' $wflink
-
-    replace_tag "$procDir/clipper.js" '__WFLINK__' $wflink
-    replace_tag "$procDir/clipper.js" '__VERSION__' $version
+    #replace_tag "$procDir/background.html" '__WFLINK__' $wflink
+    replace_tag "$procDir/waveface.js" '__WFLINK__' $wflink
 
     if [ "$dev" == "Dev" ]; then
 	mv -f "$procDir/manifest_dev.json" "$procDir/manifest.json"
@@ -42,17 +40,18 @@ function build_crx {
     replace_tag "$procDir/manifest.json" '__VERSION__' $version
     replace_tag "$procDir/manifest.json" '__WFLINK__' $wflink
 
-    crxmake --pack-extension="$procDir" --pack-extension-key="PhotoCollector$dev.pem"
-    mv -f "$procDir.crx" "output/$env-WavefaceStreamPhotoCollector-$version.crx"
+    crxmake --pack-extension="$procDir" --pack-extension-key="portal$dev.pem"
+    mv -f "$procDir.crx" "output/$env-WavefaceStreamPortal-$version.crx"
 
 }
 
 rm -rf output
 
 mkdir -p output
-build_crx 'support.PhotoCollector@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' ''
-build_crx 'develop.PhotoCollector@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev'
-build_crx 'support.PhotoCollector@waveface.com' 'https:\/\/waveface.com' $version 'production' ''
+build_crx 'support.Portal@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' ''
+build_crx 'develop.Portal@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev'
+build_crx 'support.Portal@waveface.com' 'https:\/\/waveface.com' $version 'production' ''
+build_crx 'develop.Portal@waveface.com' 'http:\/\/localhost:9090' $version 'local' 'Dev'
 
 cp -f updates.xml output/
 cp -f updates_dev.xml output/

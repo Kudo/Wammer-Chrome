@@ -1,11 +1,16 @@
 {
-    "name": "Stream Photo Collector",
+    "name": "Stream Portal",
     "version": "__VERSION__",
     "default_locale": "en",
-    "background_page": "background.html",
+    "manifest_version": 2,
+    "background": {
+	"scripts": ["waveface.js"]
+    },
     "minimum_chrome_version": "13",
     "permissions": [
-        "tabs", "http://*/*", "https://*/*"
+	"tabs",
+	"http://*/*",
+	"https://*/*"
     ],
     "description": "__MSG_extDesc__",
     "icons": {
@@ -14,7 +19,7 @@
         "19": "StreamPhotoCollector_19.png"
     },
     "browser_action": {
-        "default_title": "Stream Photo Collector",
+        "default_title": "Stream Portal",
         "default_icon": "StreamPhotoCollector_19.png"
     }
 }
