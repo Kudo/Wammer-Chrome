@@ -17,23 +17,30 @@ var g_actMgr = new ActionManager();
 var g_tabMgrContainer = new TabManagerContainer();
 
 function init(chromeTab) {
+  if (!isValidChromeTab(chromeTab)) { return; }
   var tabMgr = new TabManager(chromeTab);
   g_tabMgrContainer.add(tabMgr);
-  chrome.tabs.onUpdated.addListener(tabMgr.tabUpdated.bind(tabMgr));
+  chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
+  chrome.tabs.onUpdated.addListener(tabMgr.onTabUpdated.bind(tabMgr));
 };
 
 function extMsgDispatcher(message, sender) {
+  i
   var tabMgr = g_tabMgrContainer.getById(sender.tab.windowId, sender.tab.id);
   if (!tabMgr) { return; }
   if (message.msg === "heartbeat") {
-    tabMgr.pageInfo.duration += 1;
+    tabMgr.onHeartbeat();
   }
   return false;
 };
 
-chrome.browserAction.onClicked.addListener(init);
-
-chrome.extension.onMessage.addListener(extMsgDispatcher);
+function isValidChromeTab(chromeTab) {
+  if (chromeTab.url.match(/^https?:\/\//)) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 function ActionManager(options) {
   this.wfWebUrl = "__WFLINK__";
@@ -91,7 +98,7 @@ function ActionManager(options) {
 };
 
 function mapTabIdToKey(windowId, tabId) {
-  return windowId + '-' + tabId;
+  return tabId;
 };
 
 function mapChromeTabToKey(chromeTab) {
@@ -100,6 +107,7 @@ function mapChromeTabToKey(chromeTab) {
 
 function TabManagerContainer() {
   this._tabContainer = {};
+  this._activeTab = null;
 };
 
 TabManagerContainer.prototype.add = function(tabMgr) {
@@ -113,6 +121,12 @@ TabManagerContainer.prototype.remove = function(tabMgr) {
   }
 };
 
+TabManagerContainer.prototype.removeById = function(tabId) {
+  if (tabId in this._tabContainer) {
+    delete this._tabContainer[tabId];
+  }
+};
+
 TabManagerContainer.prototype.get = function(chromeTab) {
   var tabKey = mapChromeTabToKey(chromeTab);
   return this._tabContainer[tabKey];
@@ -123,6 +137,52 @@ TabManagerContainer.prototype.getById = function(windowId, tabId) {
   return this._tabContainer[tabKey];
 };
 
+TabManagerContainer.prototype.getActiveTab = function() {
+  if (this._activeTab) {
+    return this._activeTab;
+  } else {
+    return null;
+  }
+};
+
+TabManagerContainer.prototype.setActiveTab = function(tabMgr) {
+  this._activeTab = tabMgr;
+};
+
+TabManagerContainer.prototype.onTabActivated = function(activeInfo) {
+  var origActiveTab = this.getActiveTab();
+  if (origActiveTab) {
+    origActiveTab.disableMonitor();
+  }
+  var currActiveTab = this.getById(activeInfo.windowId, activeInfo.tabId);
+  if (!currActiveTab) {
+    var self = this;
+    chrome.tabs.get(activeInfo.tabId, function(chromeTab) {
+      if (!isValidChromeTab(chromeTab)) { return; }
+      var tabMgr = new TabManager(chromeTab);
+      self.add(tabMgr);
+      self.setActiveTab(tabMgr);
+      tabMgr.enableMonitor();
+    });
+  } else {
+    this.setActiveTab(currActiveTab);
+    currActiveTab.enableMonitor();
+  }
+};
+
+TabManagerContainer.prototype.onTabCreated = function(chromeTab) {
+  console.trace("[Enter] TabManagerContainer.onTabCreated(). tabId[" + chromeTab.id + "]");
+  if (!isValidChromeTab(chromeTab)) { return; }
+  var tabMgr = new TabManager(chromeTab);
+  this.add(tabMgr);
+  console.trace("[Leave] TabManagerContainer.onTabCreated().");
+};
+
+TabManagerContainer.prototype.onTabRemoved = function(tabId) {
+  console.trace("[Enter] TabManagerContainer.onTabRemoved(). tabId[" + tabId + "]");
+  this.remove(tabId);
+  console.trace("[Leave] TabManagerContainer.onTabRemoved().");
+};
 
 function TabManager(chromeTab) {
   this.windowId = chromeTab.windowId;
@@ -139,37 +199,46 @@ function TabManager(chromeTab) {
 };
 
 TabManager.prototype.enableMonitor = function() {
-  var script = "wfPortalTimer = setInterval(function() {chrome.extension.sendMessage(null, {msg: \"heartbeat\"});}, 1000);";
+  var script = "if (typeof(wfPortalTimer) === \"undefined\") { wfPortalTimer  = setInterval(function() {chrome.extension.sendMessage(null, {msg: \"heartbeat\"});}, 1000); }";
   g_actMgr.injectJs(this, script);
 };
 
 TabManager.prototype.disableMonitor = function() {
-  var script = "if (wfPortalTimer) { clearInterval(wfPortalTimer); }";
+  var script = "if (wfPortalTimer) { clearInterval(wfPortalTimer); delete wfPortalTimer; }";
   g_actMgr.injectJs(this, script);
 };
 
 TabManager.prototype.onChromeMessage = function(details) {
 };
 
-TabManager.prototype.tabActivated = function(activeInfo) {
+TabManager.prototype.onHeartbeat = function() {
+  this.pageInfo.duration += 1;
+  g_actMgr.captureScreenshot(this);
 };
 
-TabManager.prototype.pageChanged = function() {
+TabManager.prototype.onPageChanged = function() {
   var tabMgr = this;
   chrome.tabs.get(this.tabId, function(chromeTab) {
     tabMgr.pageInfo.uri = chromeTab.url || "";
     tabMgr.pageInfo.title = chromeTab.title || "";
     tabMgr.pageInfo.faviconUri = chromeTab.favIconUrl || "";
     tabMgr.pageInfo.startTime = new Date().toISOString();
+    tabMgr.pageInfo.duration = 0;
   });
-  g_actMgr.captureScreenshot(this);
   this.enableMonitor();
 };
 
 
-TabManager.prototype.tabUpdated = function(tabId, changeInfo, chromeTab) {
+TabManager.prototype.onTabUpdated = function(tabId, changeInfo, chromeTab) {
   if (!g_tabMgrContainer.get(chromeTab)) { return; }
   if (changeInfo.status === "complete") {
-    this.pageChanged();
+    this.onPageChanged();
   }
 };
+
+
+chrome.browserAction.onClicked.addListener(init);
+
+chrome.extension.onMessage.addListener(extMsgDispatcher);
+chrome.tabs.onCreated.addListener(g_tabMgrContainer.onTabCreated.bind(g_tabMgrContainer));
+chrome.tabs.onRemoved.addListener(g_tabMgrContainer.onTabRemoved.bind(g_tabMgrContainer));
