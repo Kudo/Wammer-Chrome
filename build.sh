@@ -31,6 +31,7 @@ function build_crx {
 
     #replace_tag "$procDir/background.html" '__WFLINK__' $wflink
     replace_tag "$procDir/waveface.js" '__WFLINK__' $wflink
+    replace_tag "$procDir/waveface.js" '__VERSION__' $version
 
     if [ "$dev" == "Dev" ]; then
 	mv -f "$procDir/manifest_dev.json" "$procDir/manifest.json"
