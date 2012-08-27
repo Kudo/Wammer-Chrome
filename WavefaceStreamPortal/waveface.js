@@ -31,6 +31,20 @@ function ActionManager(options) {
   this.options = {
     screenshotFormat: (options && options.screenshotFormat) || "jpeg",
     screenshotQuality: (options && options.screenshotQuality) || 50,
+    cloudHeartbeatTheshold: (options && options.cloudHeartbeatTheshold) || 30,
+  };
+
+  this.geoLocation = {};
+
+  this.getGeoLocation = function() {
+    console.debug("[Enter] ActionManager.getGeoLocation().");
+    navigator.geolocation.getCurrentPosition(function(position) {
+      if (position) {
+        this.geoLocation.latitude = position.coords.latitude;
+        this.geoLocation.longitude = position.coords.longitude;
+      }
+    }.bind(this));
+    console.debug("[Leave] ActionManager.getGeoLocation().");
   };
 
   this.injectJs = function(tabMgr, script) {
@@ -46,6 +60,11 @@ function ActionManager(options) {
       startTime: tabMgr.pageInfo.startTime,
       duration: tabMgr.pageInfo.duration,
       favicon: tabMgr.pageInfo.favicon,
+      client: {
+        name: "Stream Portal Chrome Extension",
+        version: "__VERSION__",
+        location: g_actMgr.geoLocation,
+      }
     };
     return feedData
   };
@@ -207,6 +226,9 @@ TabManager.prototype.disableMonitor = function() {
 TabManager.prototype.onHeartbeat = function() {
   console.debug("[Enter] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
   this.pageInfo.duration += 1;
+  if (this.pageInfo.duration % g_actMgr.options.cloudHeartbeatTheshold == 0) {
+    g_actMgr.sendHeartBeat(this);
+  }
   console.debug("[Leave] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
 };
 
@@ -244,3 +266,6 @@ chrome.windows.getAll({ populate: true }, function(windows) {
     }
   }
 });
+
+g_actMgr.getGeoLocation();
+setInterval(g_actMgr.getGeoLocation.bind(g_actMgr), 1800000);
