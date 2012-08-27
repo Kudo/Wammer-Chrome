@@ -2,7 +2,7 @@ function installNotice(downloadUrl) {
   var details = chrome.app.getDetails();
   var prevVersion = localStorage.version;
   if (details.version != prevVersion) {
-    if (typeof prevVersion == 'undefined') {
+    if (typeof(prevVersion) === "undefined") {
       console.log("Waveface Extension Installed");
       chrome.tabs.create({url: downloadUrl});
     } else {
@@ -16,30 +16,13 @@ function installNotice(downloadUrl) {
 var g_actMgr = new ActionManager();
 var g_tabMgrContainer = new TabManagerContainer();
 
-function init(chromeTab) {
-  if (!isValidChromeTab(chromeTab)) { return; }
-  var tabMgr = new TabManager(chromeTab);
-  g_tabMgrContainer.add(tabMgr);
-  chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
-  chrome.tabs.onUpdated.addListener(tabMgr.onTabUpdated.bind(tabMgr));
-};
-
 function extMsgDispatcher(message, sender) {
-  i
   var tabMgr = g_tabMgrContainer.getById(sender.tab.windowId, sender.tab.id);
   if (!tabMgr) { return; }
   if (message.msg === "heartbeat") {
     tabMgr.onHeartbeat();
   }
   return false;
-};
-
-function isValidChromeTab(chromeTab) {
-  if (chromeTab.url.match(/^https?:\/\//)) {
-    return true;
-  } else {
-    return false;
-  }
 };
 
 function ActionManager(options) {
@@ -66,18 +49,24 @@ function ActionManager(options) {
     return feedData
   };
 
-  this.sendHeartBeat = function(tabMgr, feedData) {
+  this.sendHeartBeat = function(tabMgr) {
+    console.debug("[Enter] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
+    if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
+
     var uri = this.wfWebUrl + "/api";
     var data = {
-      feed_data: feedData
+      feed_data: g_actMgr.composeFeedData(tabMgr)
     };
-    var qs = "api=" + encodeURIComponent('/sportal/feed') + "&data=" + JSON.stringify(data);
+    console.log("ActionManager.sendHeartBeat() - data[%o]", data);
+    var qs = "api=" + encodeURIComponent('/sportal/feed') + "&data=" + encodeURIComponent(JSON.stringify(data));
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", uri, true);
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.send(qs);
+
+    console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
   };
 
   this.captureScreenshot = function(tabMgr) {
@@ -121,12 +110,6 @@ TabManagerContainer.prototype.remove = function(tabMgr) {
   }
 };
 
-TabManagerContainer.prototype.removeById = function(tabId) {
-  if (tabId in this._tabContainer) {
-    delete this._tabContainer[tabId];
-  }
-};
-
 TabManagerContainer.prototype.get = function(chromeTab) {
   var tabKey = mapChromeTabToKey(chromeTab);
   return this._tabContainer[tabKey];
@@ -150,95 +133,107 @@ TabManagerContainer.prototype.setActiveTab = function(tabMgr) {
 };
 
 TabManagerContainer.prototype.onTabActivated = function(activeInfo) {
+  console.debug("[Enter] TabManagerContainer.onTabActivated(). activeInfo[%o]", activeInfo);
   var origActiveTab = this.getActiveTab();
   if (origActiveTab) {
     origActiveTab.disableMonitor();
   }
   var currActiveTab = this.getById(activeInfo.windowId, activeInfo.tabId);
   if (!currActiveTab) {
-    var self = this;
-    chrome.tabs.get(activeInfo.tabId, function(chromeTab) {
-      if (!isValidChromeTab(chromeTab)) { return; }
-      var tabMgr = new TabManager(chromeTab);
-      self.add(tabMgr);
-      self.setActiveTab(tabMgr);
-      tabMgr.enableMonitor();
-    });
+    console.warn("TabManagerContainer.onTabActivated() - Unable to find currActiveTab. activeInfo[%o]", activeInfo);
   } else {
     this.setActiveTab(currActiveTab);
     currActiveTab.enableMonitor();
   }
+  console.debug("[Leave] TabManagerContainer.onTabActivated(). activeInfo[%o]", activeInfo);
 };
 
 TabManagerContainer.prototype.onTabCreated = function(chromeTab) {
-  console.trace("[Enter] TabManagerContainer.onTabCreated(). tabId[" + chromeTab.id + "]");
-  if (!isValidChromeTab(chromeTab)) { return; }
+  console.debug("[Enter] TabManagerContainer.onTabCreated(). tabId[%s]", chromeTab.id);
   var tabMgr = new TabManager(chromeTab);
   this.add(tabMgr);
-  console.trace("[Leave] TabManagerContainer.onTabCreated().");
+  console.debug("[Leave] TabManagerContainer.onTabCreated().");
 };
 
 TabManagerContainer.prototype.onTabRemoved = function(tabId) {
-  console.trace("[Enter] TabManagerContainer.onTabRemoved(). tabId[" + tabId + "]");
-  this.remove(tabId);
-  console.trace("[Leave] TabManagerContainer.onTabRemoved().");
+  console.debug("[Enter] TabManagerContainer.onTabRemoved(). tabId[%s]", tabId);
+
+  var tabMgr = g_tabMgrContainer.getById(null, tabId);
+  if (!tabMgr) { return; }
+  g_actMgr.sendHeartBeat(tabMgr);
+  this.remove(tabMgr);
+  this.setActiveTab(null);
+
+  console.debug("[Leave] TabManagerContainer.onTabRemoved().");
 };
+
+TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeTab) {
+  console.debug("[Enter] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
+  if (changeInfo.status === "complete") {
+    var tabMgr = this.get(chromeTab);
+    if (tabMgr) {
+      tabMgr.onPageChanged();
+    }
+  }
+  console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
+};
+
+
 
 function TabManager(chromeTab) {
   this.windowId = chromeTab.windowId;
   this.tabId = chromeTab.id;
   this.key = mapChromeTabToKey(chromeTab);
-  this.pageInfo = {
-    uri: "",
-    title: "",
-    faviconUri: "",
-    startTime: null,
-    duration: 0,
-    screenshot: null
-  };
+  this.pageInfo = {};
 };
 
 TabManager.prototype.enableMonitor = function() {
+  console.debug("[Enter] TabManager.enableMonitor() - tabMgr.key[%s]", this.key);
+  if (typeof(this.pageInfo.uri) === "undefined") { return; }
   var script = "if (typeof(wfPortalTimer) === \"undefined\") { wfPortalTimer  = setInterval(function() {chrome.extension.sendMessage(null, {msg: \"heartbeat\"});}, 1000); }";
   g_actMgr.injectJs(this, script);
+  console.debug("[Leave] TabManager.enableMonitor() - tabMgr.key[%s]", this.key);
 };
 
 TabManager.prototype.disableMonitor = function() {
+  console.debug("[Enter] TabManager.disableMonitor() - tabMgr.key[%s]", this.key);
+  if (typeof(this.pageInfo.uri) === "undefined") { return; }
   var script = "if (wfPortalTimer) { clearInterval(wfPortalTimer); delete wfPortalTimer; }";
   g_actMgr.injectJs(this, script);
-};
-
-TabManager.prototype.onChromeMessage = function(details) {
+  console.debug("[Leave] TabManager.disableMonitor() - tabMgr.key[%s]", this.key);
 };
 
 TabManager.prototype.onHeartbeat = function() {
+  console.debug("[Enter] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
   this.pageInfo.duration += 1;
-  g_actMgr.captureScreenshot(this);
+  console.debug("[Leave] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
 };
 
 TabManager.prototype.onPageChanged = function() {
+  console.debug("[Enter] TabManager.onPageChanged() - tabMgr.key[%s]", this.key);
   var tabMgr = this;
+
+  // [0] Save original page's data to cloud
+  g_actMgr.sendHeartBeat(tabMgr);
+
+  // [1] Initialize as new page
+  tabMgr.pageInfo = {};
   chrome.tabs.get(this.tabId, function(chromeTab) {
+    if (!chromeTab.url.match(/^https?:\/\//)) { return; }
     tabMgr.pageInfo.uri = chromeTab.url || "";
     tabMgr.pageInfo.title = chromeTab.title || "";
     tabMgr.pageInfo.faviconUri = chromeTab.favIconUrl || "";
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
+    tabMgr.enableMonitor();
+    g_actMgr.captureScreenshot(tabMgr);
   });
-  this.enableMonitor();
+  console.debug("[Leave] TabManager.onPageChanged() - tabMgr.key[%s]", this.key);
 };
-
-
-TabManager.prototype.onTabUpdated = function(tabId, changeInfo, chromeTab) {
-  if (!g_tabMgrContainer.get(chromeTab)) { return; }
-  if (changeInfo.status === "complete") {
-    this.onPageChanged();
-  }
-};
-
-
-chrome.browserAction.onClicked.addListener(init);
 
 chrome.extension.onMessage.addListener(extMsgDispatcher);
 chrome.tabs.onCreated.addListener(g_tabMgrContainer.onTabCreated.bind(g_tabMgrContainer));
 chrome.tabs.onRemoved.addListener(g_tabMgrContainer.onTabRemoved.bind(g_tabMgrContainer));
+chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
+chrome.tabs.onUpdated.addListener(g_tabMgrContainer.onTabUpdated.bind(g_tabMgrContainer));
+
