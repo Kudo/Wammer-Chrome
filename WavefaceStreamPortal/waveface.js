@@ -29,7 +29,7 @@ function ActionManager(options) {
   this.wfWebUrl = "__WFLINK__";
 
   this.options = {
-    screenshotFormat: (options && options.screenshotFormat) || "png",
+    screenshotFormat: (options && options.screenshotFormat) || "jpeg",
     screenshotQuality: (options && options.screenshotQuality) || 50,
   };
 
@@ -45,6 +45,7 @@ function ActionManager(options) {
       screenshot: tabMgr.pageInfo.screenshot,
       startTime: tabMgr.pageInfo.startTime,
       duration: tabMgr.pageInfo.duration,
+      favicon: tabMgr.pageInfo.favicon,
     };
     return feedData
   };
@@ -79,7 +80,7 @@ function ActionManager(options) {
         if (matchedArray) {
           var mimeType = matchedArray[1];
           var base64Data = data.substr(data.indexOf(",") + 1);
-          tabMgr.pageInfo.screenshot = {"mimeType": mimeType, "data": base64Data};
+          tabMgr.pageInfo.screenshot = {"mimeType": mimeType, "data": base64Data, "size": base64Data.length};
         }
       }
     });
@@ -222,7 +223,7 @@ TabManager.prototype.onPageChanged = function() {
     if (!chromeTab.url.match(/^https?:\/\//)) { return; }
     tabMgr.pageInfo.uri = chromeTab.url || "";
     tabMgr.pageInfo.title = chromeTab.title || "";
-    tabMgr.pageInfo.faviconUri = chromeTab.favIconUrl || "";
+    tabMgr.pageInfo.favicon = chromeTab.favIconUrl || undefined;
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
     tabMgr.enableMonitor();
@@ -236,4 +237,10 @@ chrome.tabs.onCreated.addListener(g_tabMgrContainer.onTabCreated.bind(g_tabMgrCo
 chrome.tabs.onRemoved.addListener(g_tabMgrContainer.onTabRemoved.bind(g_tabMgrContainer));
 chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
 chrome.tabs.onUpdated.addListener(g_tabMgrContainer.onTabUpdated.bind(g_tabMgrContainer));
-
+chrome.windows.getAll({ populate: true }, function(windows) {
+  for (var iWindow = 0, windowsCount = windows.length; iWindow < windowsCount; ++iWindow) {
+    for (var iTab = 0, iTabCount = windows[iWindow].tabs.length; iTab < iTabCount; ++iTab) {
+      g_tabMgrContainer.onTabCreated(windows[iWindow].tabs[iTab]);
+    }
+  }
+});
