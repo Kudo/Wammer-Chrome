@@ -35,6 +35,7 @@ function ActionManager(options) {
   };
 
   this.geoLocation = {};
+  this.isLogon = false;
 
   this.getGeoLocation = function() {
     console.debug("[Enter] ActionManager.getGeoLocation().");
@@ -73,6 +74,7 @@ function ActionManager(options) {
     console.debug("[Enter] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
     if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
 
+    var actMgr = this;
     var uri = this.wfWebUrl + "/api";
     var data = {
       feed_data: g_actMgr.composeFeedData(tabMgr)
@@ -84,7 +86,15 @@ function ActionManager(options) {
     xhr.open("POST", uri, true);
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState != 4 || xhr.status != 200) {
+        console.error("ActionManager.sendHeartBeat() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
+        actMgr.isLogon = false;
+        actMgr.nonLogonHandler();
+      }
+    };
     xhr.send(qs);
+
 
     console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
   };
@@ -107,6 +117,40 @@ function ActionManager(options) {
       }
     });
     console.debug("[Leave] ActionManager.captureVisibleTab(). tabMgr.key[%s]", tabMgr.key);
+  };
+
+  this.checkLogon = function() {
+    var uri = this.wfWebUrl + "/api";
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", uri, false);
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    try {
+      xhr.send(null);
+    } catch(e) {
+      console.error("ActionManager.isLogon() - xhr.send() exception. e[%o]", e);
+      actMgr.nonLogonHandler();
+      return false;
+    }
+
+    if (xhr.status == 401) {
+      actMgr.nonLogonHandler();
+      return false;
+    } else if (xhr.status == 200) {
+      this.isLogon = true;
+      return true;
+    } else {
+      console.error("ActionManager.isLogon() - WEB api return invalid status. xhr.status[%d]", xhr.status);
+      actMgr.nonLogonHandler();
+      return false;
+    }
+  };
+
+  this.nonLogonHandler = function() {
+    chrome.browserAction.setBadgeText({text: "!"});
+    chrome.browserAction.onClicked.addListener(function(tab) {
+      var loginUri = g_actMgr.wfWebUrl + "/login";
+      chrome.tabs.create({url: loginUri});
+    });
   };
 };
 
