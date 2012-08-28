@@ -74,6 +74,8 @@ function ActionManager(options) {
     console.debug("[Enter] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
     if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
 
+    // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
+
     var actMgr = this;
     var uri = this.wfWebUrl + "/api";
     var data = {
