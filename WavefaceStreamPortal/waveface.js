@@ -48,8 +48,9 @@ function ActionManager(options) {
     console.debug("[Leave] ActionManager.getGeoLocation().");
   };
 
-  this.injectJs = function(tabMgr, script) {
-    chrome.tabs.executeScript(tabMgr.tabId, {code: script}, null);
+  this.injectJs = function(tabMgr, script, cbResp) {
+    var _cbResp = cbResp || null;
+    chrome.tabs.executeScript(tabMgr.tabId, {code: script}, _cbResp);
   };
 
   this.composeFeedData = function(tabMgr) {
@@ -89,7 +90,7 @@ function ActionManager(options) {
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.onreadystatechange = function() {
-      if (xhr.readyState != 4 || xhr.status != 200) {
+      if (xhr.status != 200) {
         console.error("ActionManager.sendHeartBeat() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
         actMgr.isLogon = false;
         actMgr.nonLogonHandler();
@@ -271,16 +272,14 @@ function TabManager(chromeTab) {
 TabManager.prototype.enableMonitor = function() {
   console.debug("[Enter] TabManager.enableMonitor() - tabMgr.key[%s]", this.key);
   if (typeof(this.pageInfo.uri) === "undefined") { return; }
-  var script = "if (typeof(wfPortalTimer) === \"undefined\") { wfPortalTimer  = setInterval(function() {chrome.extension.sendMessage(null, {msg: \"heartbeat\"});}, 1000); }";
-  g_actMgr.injectJs(this, script);
+  g_actMgr.injectJs(this, "g_contentMgr.enableMonitor();");
   console.debug("[Leave] TabManager.enableMonitor() - tabMgr.key[%s]", this.key);
 };
 
 TabManager.prototype.disableMonitor = function() {
   console.debug("[Enter] TabManager.disableMonitor() - tabMgr.key[%s]", this.key);
   if (typeof(this.pageInfo.uri) === "undefined") { return; }
-  var script = "if (wfPortalTimer) { clearInterval(wfPortalTimer); delete wfPortalTimer; }";
-  g_actMgr.injectJs(this, script);
+  g_actMgr.injectJs(this, "g_contentMgr.disableMonitor();");
   console.debug("[Leave] TabManager.disableMonitor() - tabMgr.key[%s]", this.key);
 };
 
@@ -310,6 +309,14 @@ TabManager.prototype.onPageChanged = function() {
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
     g_actMgr.sendHeartBeat(tabMgr);
+    
+    /*
+     * Temp sample
+    tabMgr.getContentInfo({contentMgrHandler:"ttt"}, function(resp) {
+      console.error("ttttttttttt - resp[%o]", resp);
+    });
+    */
+
     if (tabMgr === g_tabMgrContainer.getActiveTab()) {
       tabMgr.enableMonitor();
 
@@ -318,6 +325,19 @@ TabManager.prototype.onPageChanged = function() {
     }
   });
   console.debug("[Leave] TabManager.onPageChanged() - tabMgr.key[%s]", this.key);
+};
+
+TabManager.prototype.getContentInfo = function(reqInfo, respHandler) {
+  var message = { msg: "getInfo", request: reqInfo };
+  chrome.tabs.sendMessage(this.tabId, message, respHandler);
+};
+
+function ReplayLocator() {
+  this.ruleGen_posPercentage = function(tabMgr) {
+  };
+
+  this.ruleReplay_posPercentage = function(value) {
+  };
 };
 
 chrome.extension.onMessage.addListener(extMsgDispatcher);

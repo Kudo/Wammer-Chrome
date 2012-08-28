@@ -6,7 +6,6 @@
     "background": {
 	"scripts": ["waveface.js"]
     },
-    "minimum_chrome_version": "13",
     "permissions": [
 	"tabs",
 	"geolocation",
@@ -22,5 +21,11 @@
     "browser_action": {
         "default_title": "Stream Portal",
         "default_icon": "StreamPhotoCollector_19.png"
-    }
+    },
+    "content_scripts": [
+	{
+	    "matches": ["http://*/*", "https://*/*"],
+	    "js": ["ContentManager.js"]
+	}
+    ]
 }
