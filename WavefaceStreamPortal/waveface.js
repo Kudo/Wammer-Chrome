@@ -89,7 +89,8 @@ function ActionManager(options) {
     console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
   };
 
-  this.captureScreenshot = function(tabMgr) {
+  this.captureScreenshot = function(tabMgr, completeHandler) {
+    console.debug("[Enter] ActionManager.captureVisibleTab(). tabMgr.key[%s]", tabMgr.key);
     chrome.tabs.captureVisibleTab(tabMgr.windowId, {
       "format": this.options.screenshotFormat,
       "quality": this.options.screenshotQuality
@@ -100,9 +101,12 @@ function ActionManager(options) {
           var mimeType = matchedArray[1];
           var base64Data = data.substr(data.indexOf(",") + 1);
           tabMgr.pageInfo.screenshot = {"mimeType": mimeType, "data": base64Data, "size": base64Data.length};
+
+          if (typeof(completeHandler) === "function") { completeHandler(); }
         }
       }
     });
+    console.debug("[Leave] ActionManager.captureVisibleTab(). tabMgr.key[%s]", tabMgr.key);
   };
 };
 
@@ -149,7 +153,9 @@ TabManagerContainer.prototype.getActiveTab = function() {
 };
 
 TabManagerContainer.prototype.setActiveTab = function(tabMgr) {
+  console.debug("[Enter] TabManagerContainer.setActiveTab(). tabMgr.key[%s]", tabMgr.key);
   this._activeTab = tabMgr;
+  console.debug("[Leave] TabManagerContainer.setActiveTab(). tabMgr.key[%s]", tabMgr.key);
 };
 
 TabManagerContainer.prototype.onTabActivated = function(activeInfo) {
@@ -163,6 +169,15 @@ TabManagerContainer.prototype.onTabActivated = function(activeInfo) {
     console.warn("TabManagerContainer.onTabActivated() - Unable to find currActiveTab. activeInfo[%o]", activeInfo);
   } else {
     this.setActiveTab(currActiveTab);
+    if (typeof(currActiveTab.pageInfo.screenshot) === "undefined" &&
+        typeof(currActiveTab.pageInfo.uri) === "string" && currActiveTab.pageInfo.uri.match(/^https?:\/\//)) {
+      // Due to Chrome SDK's limitation which can only capture screenshot at current selected tab.
+      // If user open tabs in background, we will only be able to capture screenshot lately when user select the tab as foreground.
+      // Otherwise, if user never set the tab as foreground, we don't have chance to capture the screenshot.
+      g_actMgr.captureScreenshot(currActiveTab, function() {
+        g_actMgr.sendHeartBeat(currActiveTab);
+      });
+    }
     currActiveTab.enableMonitor();
   }
   console.debug("[Leave] TabManagerContainer.onTabActivated(). activeInfo[%o]", activeInfo);
@@ -248,8 +263,13 @@ TabManager.prototype.onPageChanged = function() {
     tabMgr.pageInfo.favicon = chromeTab.favIconUrl || undefined;
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
-    tabMgr.enableMonitor();
-    g_actMgr.captureScreenshot(tabMgr);
+    g_actMgr.sendHeartBeat(tabMgr);
+    if (tabMgr === g_tabMgrContainer.getActiveTab()) {
+      tabMgr.enableMonitor();
+
+      // FIXME: race condition ? if change to another tab between this two statements?
+      g_actMgr.captureScreenshot(tabMgr);
+    }
   });
   console.debug("[Leave] TabManager.onPageChanged() - tabMgr.key[%s]", this.key);
 };
