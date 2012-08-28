@@ -4,9 +4,8 @@
     "default_locale": "en",
     "manifest_version": 2,
     "background": {
-	"scripts": ["waveface.js"]
+	"scripts": ["TabController.js"]
     },
-    "minimum_chrome_version": "13",
     "permissions": [
 	"tabs",
 	"geolocation",
