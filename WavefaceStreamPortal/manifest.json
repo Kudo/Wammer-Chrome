@@ -25,7 +25,7 @@
     "content_scripts": [
 	{
 	    "matches": ["http://*/*", "https://*/*"],
-	    "js": ["ContentManager.js"]
+	    "js": ["jquery.js", "ContentManager.js"]
 	}
     ]
 }

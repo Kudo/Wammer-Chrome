@@ -21,6 +21,8 @@ function extMsgDispatcher(message, sender) {
   if (!tabMgr) { return; }
   if (message.msg === "heartbeat") {
     tabMgr.onHeartbeat();
+  } else if (message.msg === "scroll") {
+    tabMgr.onScroll(message.data);
   }
   return false;
 };
@@ -48,11 +50,6 @@ function ActionManager(options) {
     console.debug("[Leave] ActionManager.getGeoLocation().");
   };
 
-  this.injectJs = function(tabMgr, script, cbResp) {
-    var _cbResp = cbResp || null;
-    chrome.tabs.executeScript(tabMgr.tabId, {code: script}, _cbResp);
-  };
-
   this.composeFeedData = function(tabMgr) {
     var feedData = {
       version: 1,
@@ -62,6 +59,7 @@ function ActionManager(options) {
       startTime: tabMgr.pageInfo.startTime,
       duration: tabMgr.pageInfo.duration,
       favicon: tabMgr.pageInfo.favicon,
+      extInfo: tabMgr.pageInfo.extInfo,
       client: {
         name: "Stream Portal Chrome Extension",
         version: "__VERSION__",
@@ -200,9 +198,10 @@ TabManagerContainer.prototype.getActiveTab = function() {
 };
 
 TabManagerContainer.prototype.setActiveTab = function(tabMgr) {
-  console.debug("[Enter] TabManagerContainer.setActiveTab(). tabMgr.key[%s]", tabMgr.key);
+  var tabKey = (tabMgr && tabMgr.key) || null;
+  console.debug("[Enter] TabManagerContainer.setActiveTab(). tabKey[%s]", tabKey);
   this._activeTab = tabMgr;
-  console.debug("[Leave] TabManagerContainer.setActiveTab(). tabMgr.key[%s]", tabMgr.key);
+  console.debug("[Leave] TabManagerContainer.setActiveTab(). tabKey[%s]", tabKey);
 };
 
 TabManagerContainer.prototype.onTabActivated = function(activeInfo) {
@@ -272,14 +271,14 @@ function TabManager(chromeTab) {
 TabManager.prototype.enableMonitor = function() {
   console.debug("[Enter] TabManager.enableMonitor() - tabMgr.key[%s]", this.key);
   if (typeof(this.pageInfo.uri) === "undefined") { return; }
-  g_actMgr.injectJs(this, "g_contentMgr.enableMonitor();");
+  this.execContentJsAsync("g_contentMgr.enableMonitor();");
   console.debug("[Leave] TabManager.enableMonitor() - tabMgr.key[%s]", this.key);
 };
 
 TabManager.prototype.disableMonitor = function() {
   console.debug("[Enter] TabManager.disableMonitor() - tabMgr.key[%s]", this.key);
   if (typeof(this.pageInfo.uri) === "undefined") { return; }
-  g_actMgr.injectJs(this, "g_contentMgr.disableMonitor();");
+  this.execContentJsAsync("g_contentMgr.disableMonitor();");
   console.debug("[Leave] TabManager.disableMonitor() - tabMgr.key[%s]", this.key);
 };
 
@@ -291,6 +290,13 @@ TabManager.prototype.onHeartbeat = function() {
   }
   console.debug("[Leave] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
 };
+
+TabManager.prototype.onScroll = function(replayLocatorData) {
+  console.debug("[Enter] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
+  this.pageInfo.extInfo.replayLocator = [replayLocatorData];
+  console.debug("[Leave] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
+};
+
 
 TabManager.prototype.onPageChanged = function() {
   console.debug("[Enter] TabManager.onPageChanged() - tabMgr.key[%s]", this.key);
@@ -308,15 +314,9 @@ TabManager.prototype.onPageChanged = function() {
     tabMgr.pageInfo.favicon = chromeTab.favIconUrl || undefined;
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
+    tabMgr.pageInfo.extInfo = { version: 1 };
     g_actMgr.sendHeartBeat(tabMgr);
     
-    /*
-     * Temp sample
-    tabMgr.getContentInfo({contentMgrHandler:"ttt"}, function(resp) {
-      console.error("ttttttttttt - resp[%o]", resp);
-    });
-    */
-
     if (tabMgr === g_tabMgrContainer.getActiveTab()) {
       tabMgr.enableMonitor();
 
@@ -327,17 +327,13 @@ TabManager.prototype.onPageChanged = function() {
   console.debug("[Leave] TabManager.onPageChanged() - tabMgr.key[%s]", this.key);
 };
 
-TabManager.prototype.getContentInfo = function(reqInfo, respHandler) {
-  var message = { msg: "getInfo", request: reqInfo };
+TabManager.prototype.execContentJsSync = function(request, respHandler) {
+  var message = { msg: "execJs", request: request, syncCall: true };
   chrome.tabs.sendMessage(this.tabId, message, respHandler);
 };
 
-function ReplayLocator() {
-  this.ruleGen_posPercentage = function(tabMgr) {
-  };
-
-  this.ruleReplay_posPercentage = function(value) {
-  };
+TabManager.prototype.execContentJsAsync = function(request, completeHandler) {
+  chrome.tabs.executeScript(this.tabId, {code: request}, completeHandler);
 };
 
 chrome.extension.onMessage.addListener(extMsgDispatcher);
