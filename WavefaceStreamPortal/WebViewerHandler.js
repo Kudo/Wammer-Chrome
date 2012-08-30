@@ -23,11 +23,11 @@ function initConfirmModal() {
     $('<div class="modal hide fade">' +
         '<div class="modal-header">' +
         '<a class="close" data-dismiss="modal" >&times;</a>' +
-        '<h3>Go to original position?</h3>' +
+        '<h3>Pick up where you left off?</h3>' +
         '</div>' +
 
         '<div class="modal-body">' +
-        '<p>Do you want to open this page and move original viewed position?</p>' +
+        '<p>We kept your last reading position intact. Press Yes to continue reading from your last position on the webpage.</p>' +
         '</div>' +
 
         '<div class="modal-footer">' +
