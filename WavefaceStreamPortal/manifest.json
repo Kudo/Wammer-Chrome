@@ -26,6 +26,10 @@
 	{
 	    "matches": ["http://*/*", "https://*/*"],
 	    "js": ["jquery.js", "ContentManager.js"]
+	},
+	{
+	    "matches": ["__WFLINK__/test/portal"],
+	    "js": ["WebViewerHandler.js"]
 	}
     ]
 }

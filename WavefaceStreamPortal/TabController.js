@@ -19,10 +19,20 @@ var g_tabMgrContainer = new TabManagerContainer();
 function extMsgDispatcher(message, sender) {
   var tabMgr = g_tabMgrContainer.getById(sender.tab.windowId, sender.tab.id);
   if (!tabMgr) { return; }
+
   if (message.msg === "heartbeat") {
     tabMgr.onHeartbeat();
   } else if (message.msg === "scroll") {
     tabMgr.onScroll(message.data);
+  } else if (message.msg === "openPage") {
+    chrome.tabs.create({url: message.url}, function(newTab) {
+      var tabMgr = g_tabMgrContainer.get(newTab);
+      if (!tabMgr) {
+        console.error("callback before new TabManager create. newTab[%o]", newTab);
+      } else {
+        tabMgr.initReplayLocator = message.replayLocatorData;
+      }
+    });
   }
   return false;
 };
@@ -255,6 +265,12 @@ TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeT
     if (tabMgr) {
       tabMgr.onPageChanged();
     }
+
+    if (tabMgr.initReplayLocator) {
+      console.info("TabManagerContainer.onTabUpdated() - initReplayLocator[%o]", tabMgr.initReplayLocator);
+      tabMgr.replayLocation(tabMgr.initReplayLocator);
+      delete tabMgr.initReplayLocator;
+    }
   }
   console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
 };
@@ -293,7 +309,7 @@ TabManager.prototype.onHeartbeat = function() {
 
 TabManager.prototype.onScroll = function(replayLocatorData) {
   console.debug("[Enter] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
-  this.pageInfo.extInfo.replayLocator = [replayLocatorData];
+  this.pageInfo.extInfo.replayLocator = replayLocatorData;
   console.debug("[Leave] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
 };
 
@@ -334,6 +350,11 @@ TabManager.prototype.execContentJsSync = function(request, respHandler) {
 
 TabManager.prototype.execContentJsAsync = function(request, completeHandler) {
   chrome.tabs.executeScript(this.tabId, {code: request}, completeHandler);
+};
+
+TabManager.prototype.replayLocation = function(replayLocatorData) {
+  var message = { msg: "replayLocation", replayLocatorData: replayLocatorData};
+  chrome.tabs.sendMessage(this.tabId, message);
 };
 
 chrome.extension.onMessage.addListener(extMsgDispatcher);
