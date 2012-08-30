@@ -43,7 +43,7 @@ function ActionManager(options) {
   this.options = {
     screenshotFormat: (options && options.screenshotFormat) || "jpeg",
     screenshotQuality: (options && options.screenshotQuality) || 50,
-    cloudHeartbeatTheshold: (options && options.cloudHeartbeatTheshold) || 30,
+    cloudHeartbeatTheshold: (options && options.cloudHeartbeatTheshold) || 30
   };
 
   this.geoLocation = {};
@@ -73,7 +73,7 @@ function ActionManager(options) {
       client: {
         name: "Stream Portal Chrome Extension",
         version: "__VERSION__",
-        location: g_actMgr.geoLocation,
+        location: g_actMgr.geoLocation
       }
     };
     return feedData
