@@ -1,5 +1,6 @@
 .DS_Store
-develop-WavefaceStreamPhotoCollector
-staging-WavefaceStreamPhotoCollector
-production-WavefaceStreamPhotoCollector
+local-WavefaceStreamPortal
+develop-WavefaceStreamPortal
+staging-WavefaceStreamPortal
+production-WavefaceStreamPortal
 output
