@@ -1,0 +1,20 @@
+--- bootstrap.css.orig	2012-08-30 17:05:14.000000000 +0800
++++ bootstrap.css	2012-08-30 17:05:58.000000000 +0800
+@@ -2038,7 +2038,7 @@
+   *margin-right: .3em;
+   line-height: 14px;
+   vertical-align: text-top;
+-  background-image: url("../img/glyphicons-halflings.png");
++  background-image: url("chrome-extension://__MSG_@@extension_id__/bootstrap/img/glyphicons-halflings.png");
+   background-position: 14px 14px;
+   background-repeat: no-repeat;
+ }
+@@ -2052,7 +2052,7 @@
+ .dropdown-menu > li > a:hover > [class*=" icon-"],
+ .dropdown-menu > .active > a > [class^="icon-"],
+ .dropdown-menu > .active > a > [class*=" icon-"] {
+-  background-image: url("../img/glyphicons-halflings-white.png");
++  background-image: url("chrome-extension://__MSG_@@extension_id__/bootstrap/img/glyphicons-halflings-white.png");
+ }
+ 
+ .icon-glass {

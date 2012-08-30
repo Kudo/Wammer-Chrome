@@ -29,7 +29,12 @@
 	},
 	{
 	    "matches": ["__WFLINK__/test/portal"],
-	    "js": ["WebViewerHandler.js"]
+	    "js": ["WebViewerHandler.js", "bootstrap/js/bootstrap.min.js"],
+	    "css": ["bootstrap/css/bootstrap.min.css"]
 	}
+    ],
+    "web_accessible_resources": [
+	"bootstrap/img/glyphicons-halflings.png",
+	"bootstrap/img/glyphicons-halflings-white.png"
     ]
 }
