@@ -101,7 +101,11 @@ function ActionManager(options) {
       if (xhr.status != 200) {
         console.error("ActionManager.sendHeartBeat() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
         actMgr.isLogon = false;
-        actMgr.nonLogonHandler();
+        actMgr.showWarningBadge();
+      } else if (xhr.status == 200) {
+        // FIXME: DO NOT send data everytime here
+        actMgr.isLogon = true;
+        actMgr.showWarningBadge(false);
       }
     };
     xhr.send(qs);
@@ -138,31 +142,40 @@ function ActionManager(options) {
     try {
       xhr.send(null);
     } catch(e) {
-      console.error("ActionManager.isLogon() - xhr.send() exception. e[%o]", e);
-      actMgr.nonLogonHandler();
+      console.error("ActionManager.checkLogon() - xhr.send() exception. e[%o]", e);
+      this.showWarningBadge();
       return false;
     }
 
     if (xhr.status == 401) {
-      actMgr.nonLogonHandler();
+      console.warn("ActionManager.checkLogon() - server return 401.");
+      this.showWarningBadge();
       return false;
     } else if (xhr.status == 200) {
       this.isLogon = true;
+      this.showWarningBadge(false);
       return true;
     } else {
-      console.error("ActionManager.isLogon() - WEB api return invalid status. xhr.status[%d]", xhr.status);
-      actMgr.nonLogonHandler();
+      console.error("ActionManager.checkLogon() - WEB api return invalid status. xhr.status[%d]", xhr.status);
+      this.showWarningBadge();
       return false;
     }
   };
 
-  this.nonLogonHandler = function() {
-    chrome.browserAction.setBadgeText({text: "!"});
-    chrome.browserAction.onClicked.addListener(function(tab) {
-      var loginUri = g_actMgr.wfWebUrl + "/login";
-      chrome.tabs.create({url: loginUri});
-    });
+  this.showWarningBadge = function(isWarning) {
+    isWarning = typeof(isWarning) !== "undefined" ? isWarning : true;
+    if (isWarning) {
+      chrome.browserAction.setBadgeText({text: "!"});
+    } else {
+      chrome.browserAction.setBadgeText({text: ""});
+    }
   };
+
+  this.onClickBrowserAction = function(chromeTab) {
+    var portalUrl = this.wfWebUrl + "/portal/";
+    chrome.tabs.create({url: portalUrl});
+  };
+
 };
 
 function mapTabIdToKey(windowId, tabId) {
@@ -358,6 +371,9 @@ TabManager.prototype.replayLocation = function(replayLocatorData) {
 };
 
 chrome.extension.onMessage.addListener(extMsgDispatcher);
+chrome.browserAction.onClicked.addListener(g_actMgr.onClickBrowserAction.bind(g_actMgr));
+chrome.browserAction.setBadgeText({text: ""});
+
 chrome.tabs.onCreated.addListener(g_tabMgrContainer.onTabCreated.bind(g_tabMgrContainer));
 chrome.tabs.onRemoved.addListener(g_tabMgrContainer.onTabRemoved.bind(g_tabMgrContainer));
 chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
@@ -371,4 +387,5 @@ chrome.windows.getAll({ populate: true }, function(windows) {
 });
 
 g_actMgr.getGeoLocation();
+g_actMgr.checkLogon();
 setInterval(g_actMgr.getGeoLocation.bind(g_actMgr), 1800000);
