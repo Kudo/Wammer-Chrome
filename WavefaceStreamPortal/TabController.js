@@ -43,7 +43,7 @@ function ActionManager(options) {
   this.options = {
     screenshotFormat: (options && options.screenshotFormat) || "jpeg",
     screenshotQuality: (options && options.screenshotQuality) || 50,
-    cloudHeartbeatTheshold: (options && options.cloudHeartbeatTheshold) || 30
+    cloudHeartbeatTheshold: (options && options.cloudHeartbeatTheshold) || 5 
   };
 
   this.geoLocation = {};
