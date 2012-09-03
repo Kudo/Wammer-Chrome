@@ -11,7 +11,7 @@ function installNotice(downloadUrl) {
     localStorage.version = details.version;
   }
 };
-//installNotice("__WFLINK__/StreamPhotoCollector/welcome");
+//installNotice("__WFLINK__/StreamPortal/welcome");
 
 var g_actMgr = new ActionManager();
 var g_tabMgrContainer = new TabManagerContainer();
