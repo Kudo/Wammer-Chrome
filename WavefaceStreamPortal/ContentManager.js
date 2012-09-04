@@ -81,7 +81,30 @@ function contentMsgDispatcher(message, sender, cbSendResp) {
       return true;
     }
   } else if (message.msg === "replayLocation") {
-    ReplayLocator.replayWithRules(message.replayLocatorData);
+    var g_replayDialog = $('<div id="dkcgmhmeeaalogijmpcjnfiphgpicbfa_replayDialog">' +
+        '<div>' +
+        '<p"><span>Go to original position?</span>' +
+        '<a class="btn btn-small btn-success" id="wf_replayLocator_yes" href="#">GO</a>' +
+        '<a class="btn btn-small btn-inverse" id="wf_replayLocator_no" href="#">&times;</a>' +
+        '</p></div></div>');
+    g_replayDialog.appendTo("body");
+    var g_replayDialogTimer = setTimeout(function() {
+      ReplayLocator.replayWithRules(message.replayLocatorData);
+      g_replayDialog.remove();
+    }, 5000);
+    g_replayDialog.find("#wf_replayLocator_yes").click(function(e) {
+      e.preventDefault();
+      ReplayLocator.replayWithRules(message.replayLocatorData);
+      g_replayDialog.remove();
+      clearTimeout(g_replayDialogTimer);
+    });
+    g_replayDialog.find("#wf_replayLocator_no").click(function(e) {
+      e.preventDefault();
+      g_replayDialog.remove();
+      clearTimeout(g_replayDialogTimer);
+    });
+
+    //ReplayLocator.replayWithRules(message.replayLocatorData);
   }
 };
 

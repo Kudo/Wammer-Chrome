@@ -26,12 +26,12 @@
 	{
 	    "matches": ["http://*/*", "https://*/*"],
 	    "js": ["jquery.js", "ContentManager.js"],
+	    "css": ["ReplayDialog.css"],
 	    "run_at": "document_start"
 	},
 	{
 	    "matches": ["__WFLINK__/test/portal", "__WFLINK__/portal/"],
-	    "js": ["WebViewerHandler.js", "bootstrap/js/bootstrap.min.js"],
-	    "css": ["bootstrap/css/bootstrap.min.css"]
+	    "js": ["WebViewerHandler.js"]
 	}
     ],
     "web_accessible_resources": [
