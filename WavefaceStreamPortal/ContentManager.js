@@ -60,6 +60,9 @@ function ContentManager() {
   this.onScroll = function(e) {
     chrome.extension.sendMessage(null, {msg: "scroll", data: ReplayLocator.generateRules() });
   };
+
+  this.showReplayDialog = function(e) {
+  };
 };
 
 g_contentMgr = new ContentManager();
@@ -83,4 +86,13 @@ function contentMsgDispatcher(message, sender, cbSendResp) {
 };
 
 chrome.extension.onMessage.addListener(contentMsgDispatcher);
-$(document).scroll(g_contentMgr.onScroll);
+
+$(document).ready(function() {
+  chrome.extension.sendMessage(null, {msg: "pageOnDomContentLoaded"});
+});
+
+$(window).load(function() {
+  chrome.extension.sendMessage(null, {msg: "pageOnLoad"});
+  $(document).scroll(g_contentMgr.onScroll);
+});
+

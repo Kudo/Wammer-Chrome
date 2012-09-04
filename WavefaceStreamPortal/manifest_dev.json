@@ -25,7 +25,8 @@
     "content_scripts": [
 	{
 	    "matches": ["http://*/*", "https://*/*"],
-	    "js": ["jquery.js", "ContentManager.js"]
+	    "js": ["jquery.js", "ContentManager.js"],
+	    "run_at": "document_start"
 	},
 	{
 	    "matches": ["__WFLINK__/test/portal", "__WFLINK__/portal/"],

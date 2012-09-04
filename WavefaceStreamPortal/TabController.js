@@ -33,7 +33,17 @@ function extMsgDispatcher(message, sender) {
         tabMgr.initReplayLocator = message.replayLocatorData;
       }
     });
+  } else if (message.msg === "pageOnDomContentLoaded") {
+    tabMgr.onPageDomContentLoaded();
+  } else if (message.msg === "pageOnLoad") {
+    tabMgr.onPageLoad();
+  } else if (message.msg === "captureScreenshot") {
+    if (tabMgr === g_tabMgrContainer.getActiveTab()) {
+      // FIXME: race condition ? if change to another tab between this two statements?
+      g_actMgr.captureScreenshot(tabMgr);
+    }
   }
+
   return false;
 };
 
@@ -65,7 +75,6 @@ function ActionManager(options) {
       version: 1,
       uri: tabMgr.pageInfo.uri,
       title: tabMgr.pageInfo.title,
-      screenshot: tabMgr.pageInfo.screenshot,
       startTime: tabMgr.pageInfo.startTime,
       duration: tabMgr.pageInfo.duration,
       favicon: tabMgr.pageInfo.favicon,
@@ -76,6 +85,13 @@ function ActionManager(options) {
         location: g_actMgr.geoLocation
       }
     };
+    if (tabMgr.pageInfo.screenshots) {
+      // FIXME: Support multiple screenshots
+      feedData.screenshot = tabMgr.pageInfo.screenshots[0];
+
+      tabMgr.pageInfo.screenshots = null;   // Set as null to prevent sending screenshot many times.
+    }
+
     return feedData
   };
 
@@ -114,8 +130,13 @@ function ActionManager(options) {
     console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
   };
 
-  this.captureScreenshot = function(tabMgr, completeHandler) {
-    console.debug("[Enter] ActionManager.captureVisibleTab(). tabMgr.key[%s]", tabMgr.key);
+  this.captureScreenshot = function(tabMgr, capturePos, completeHandler) {
+    console.debug("[Enter] ActionManager.captureVisibleTab(). tabMgr.key[%s] capturePos[%s]", tabMgr.key, capturePos);
+    if (tabMgr.pageInfo.screenshots === null) {
+      return;
+    }
+    capturePos = capturePos || "head";
+
     chrome.tabs.captureVisibleTab(tabMgr.windowId, {
       "format": this.options.screenshotFormat,
       "quality": this.options.screenshotQuality
@@ -125,13 +146,25 @@ function ActionManager(options) {
         if (matchedArray) {
           var mimeType = matchedArray[1];
           var base64Data = data.substr(data.indexOf(",") + 1);
-          tabMgr.pageInfo.screenshot = {"mimeType": mimeType, "data": base64Data, "size": base64Data.length};
+
+          if (typeof(tabMgr.pageInfo.screenshots) === "undefined") {
+            tabMgr.pageInfo.screenshots = [];
+          }
+
+          if (capturePos === "head") {
+            tabMgr.pageInfo.screenshots.push({
+              "mimeType": mimeType,
+              "data": base64Data,
+              "size": base64Data.length,
+              "pos": capturePos
+            });
+          }
 
           if (typeof(completeHandler) === "function") { completeHandler(); }
         }
       }
     });
-    console.debug("[Leave] ActionManager.captureVisibleTab(). tabMgr.key[%s]", tabMgr.key);
+    console.debug("[Leave] ActionManager.captureVisibleTab(). tabMgr.key[%s] capturePos[%s]", tabMgr.key, capturePos);
   };
 
   this.checkLogon = function() {
@@ -238,12 +271,12 @@ TabManagerContainer.prototype.onTabActivated = function(activeInfo) {
     console.warn("TabManagerContainer.onTabActivated() - Unable to find currActiveTab. activeInfo[%o]", activeInfo);
   } else {
     this.setActiveTab(currActiveTab);
-    if (typeof(currActiveTab.pageInfo.screenshot) === "undefined" &&
+    if (typeof(currActiveTab.pageInfo.screenshots) === "undefined" &&
         typeof(currActiveTab.pageInfo.uri) === "string" && currActiveTab.pageInfo.uri.match(/^https?:\/\//)) {
       // Due to Chrome SDK's limitation which can only capture screenshot at current selected tab.
       // If user open tabs in background, we will only be able to capture screenshot lately when user select the tab as foreground.
       // Otherwise, if user never set the tab as foreground, we don't have chance to capture the screenshot.
-      g_actMgr.captureScreenshot(currActiveTab, function() {
+      g_actMgr.captureScreenshot(currActiveTab, "head", function() {
         g_actMgr.sendHeartBeat(currActiveTab);
       });
     }
@@ -273,18 +306,10 @@ TabManagerContainer.prototype.onTabRemoved = function(tabId) {
 
 TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeTab) {
   console.debug("[Enter] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
-  if (changeInfo.status === "complete") {
-    var tabMgr = this.get(chromeTab);
-    if (tabMgr) {
-      tabMgr.onPageChanged();
-    }
-
-    if (tabMgr.initReplayLocator) {
-      console.info("TabManagerContainer.onTabUpdated() - initReplayLocator[%o]", tabMgr.initReplayLocator);
-      tabMgr.replayLocation(tabMgr.initReplayLocator);
-      delete tabMgr.initReplayLocator;
-    }
-  }
+  var tabMgr = this.get(chromeTab);
+  if (!tabMgr) { return; }
+  if (changeInfo.status == "loading")
+    tabMgr.onPageLoading();
   console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
 };
 
@@ -326,9 +351,14 @@ TabManager.prototype.onScroll = function(replayLocatorData) {
   console.debug("[Leave] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
 };
 
+TabManager.prototype.onPageLoading = function() {
+  console.debug("[Enter] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
+  console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
+};
 
-TabManager.prototype.onPageChanged = function() {
-  console.debug("[Enter] TabManager.onPageChanged() - tabMgr.key[%s]", this.key);
+TabManager.prototype.onPageDomContentLoaded = function() {
+  console.debug("[Enter] TabManager.onPageDomContentLoaded() - tabMgr.key[%s]", this.key);
+
   var tabMgr = this;
 
   // [0] Save original page's data to cloud
@@ -345,15 +375,30 @@ TabManager.prototype.onPageChanged = function() {
     tabMgr.pageInfo.duration = 0;
     tabMgr.pageInfo.extInfo = { version: 1 };
     g_actMgr.sendHeartBeat(tabMgr);
-    
-    if (tabMgr === g_tabMgrContainer.getActiveTab()) {
-      tabMgr.enableMonitor();
-
-      // FIXME: race condition ? if change to another tab between this two statements?
-      g_actMgr.captureScreenshot(tabMgr);
-    }
   });
-  console.debug("[Leave] TabManager.onPageChanged() - tabMgr.key[%s]", this.key);
+
+  // [2] Check if open tab with replayLocator
+  if (tabMgr.initReplayLocator) {
+    console.info("TabManager.onPageDomContentLoaded() - initReplayLocator[%o]", tabMgr.initReplayLocator);
+    tabMgr.replayLocation(tabMgr.initReplayLocator);
+    delete tabMgr.initReplayLocator;
+  }
+
+  console.debug("[Leave] TabManager.onPageDomContentLoaded() - tabMgr.key[%s]", this.key);
+};
+
+TabManager.prototype.onPageLoad = function() {
+  console.debug("[Enter] TabManager.onPageLoad() - tabMgr.key[%s]", this.key);
+
+  if (this === g_tabMgrContainer.getActiveTab()) {
+    this.enableMonitor();
+
+    // FIXME: race condition ? if change to another tab between this two statements?
+    g_actMgr.captureScreenshot(this);
+    g_actMgr.sendHeartBeat(this);
+  }
+
+  console.debug("[Leave] TabManager.onPageLoad() - tabMgr.key[%s]", this.key);
 };
 
 TabManager.prototype.execContentJsSync = function(request, respHandler) {
@@ -381,7 +426,9 @@ chrome.tabs.onUpdated.addListener(g_tabMgrContainer.onTabUpdated.bind(g_tabMgrCo
 chrome.windows.getAll({ populate: true }, function(windows) {
   for (var iWindow = 0, windowsCount = windows.length; iWindow < windowsCount; ++iWindow) {
     for (var iTab = 0, iTabCount = windows[iWindow].tabs.length; iTab < iTabCount; ++iTab) {
-      g_tabMgrContainer.onTabCreated(windows[iWindow].tabs[iTab]);
+      var tabMgr = new TabManager(windows[iWindow].tabs[iTab]);
+      g_tabMgrContainer.add(tabMgr);
+      tabMgr.onPageDomContentLoaded();
     }
   }
 });
