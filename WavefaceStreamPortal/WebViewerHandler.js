@@ -1,10 +1,26 @@
+function getExtInfo(oid, completeHandler) {
+  var uri = "__WFLINK__/api";
+  var data = {
+    api: "/sportal/get",
+    data: JSON.stringify({
+      oids: {oid:oid}
+    })
+  };
+  $.getJSON(uri, data, function(retData) {
+    completeHandler(retData.results[0].ext_info);
+  });
+};
+
 $("#Portals").on("click", "a.extPage", function(e) {
   e.preventDefault();
   var elem = $(e.currentTarget);
-  var extInfo = JSON.parse(elem.attr("data-ext_info"));
-  chrome.extension.sendMessage(null, {
-    msg: "openPage",
-    url: elem.attr("href"),
-    replayLocatorData: extInfo.replayLocator,
+  var oid = elem.attr("data-oid");
+  //var oid = "bdf6a866-ca99-492f-9b59-8cf8447d29a1";
+  getExtInfo(oid, function(extInfo) {
+    chrome.extension.sendMessage(null, {
+      msg: "openPage",
+      url: elem.attr("href"),
+      replayLocatorData: extInfo.replayLocator,
+    });
   });
 });

@@ -32,6 +32,7 @@ function build_crx {
     #replace_tag "$procDir/background.html" '__WFLINK__' $wflink
     replace_tag "$procDir/TabController.js" '__WFLINK__' $wflink
     replace_tag "$procDir/TabController.js" '__VERSION__' $version
+    replace_tag "$procDir/WebViewerHandler.js" '__WFLINK__' $wflink
 
     if [ "$dev" == "Dev" ]; then
 	mv -f "$procDir/manifest_dev.json" "$procDir/manifest.json"
