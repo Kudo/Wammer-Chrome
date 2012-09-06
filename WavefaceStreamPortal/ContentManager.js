@@ -13,18 +13,24 @@ ReplayLocator.ruleGen_posPercentage = function() {
 };
 
 ReplayLocator.ruleReplay_posPercentage = function(value) {
-  var yPos = $(document).height() * value / 100;
-  $(window).scrollTop(yPos);
+  return ($(document).height() * value / 100);
 };
 
 ReplayLocator.replayWithRules = function(replayLocatorData) {
+  var yPos = 0;
+
+  // [0] Match yPos from all rules' handler
   for (var iRule = 0, ruleCount = replayLocatorData.length; iRule < ruleCount; ++iRule) {
     var ruleData = replayLocatorData[iRule];
     var handler = ReplayLocator["ruleReplay_" + ruleData.rule];
     if (typeof(handler) === "function") {
-      handler(ruleData.value);
+      yPos = handler(ruleData.value);
     }
   }
+
+  // [1] Do scrolling
+  if (yPos > 0)
+    $("html,body").animate({scrollTop: yPos});
 };
 
 ReplayLocator.generateRules = function() {
