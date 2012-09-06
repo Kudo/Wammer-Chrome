@@ -15,7 +15,6 @@ $("#Portals").on("click", "a.extPage", function(e) {
   e.preventDefault();
   var elem = $(e.currentTarget);
   var oid = elem.attr("data-oid");
-  //var oid = "bdf6a866-ca99-492f-9b59-8cf8447d29a1";
   getExtInfo(oid, function(extInfo) {
     chrome.extension.sendMessage(null, {
       msg: "openPage",
