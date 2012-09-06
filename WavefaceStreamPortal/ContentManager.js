@@ -47,6 +47,8 @@ ReplayLocator.generateRules = function() {
 
 function ContentManager() {
   this._monitorTimer = null;
+  this._replayDialogTimer = null;
+  this._isLoaded = false;
 
   this.enableMonitor = function() {
     if (!this._monitorTimer) {
@@ -64,7 +66,17 @@ function ContentManager() {
   };
 
   this.onScroll = function(e) {
-    chrome.extension.sendMessage(null, {msg: "scroll", data: ReplayLocator.generateRules() });
+    // [0] Remove replay dialog
+    if (this._replayDialog)
+      this._replayDialog.remove();
+    if (this._replayDialogTimer) {
+      clearTimeout(this._replayDialogTimer);
+      this._replayDialogTimer = null;
+    }
+
+    // [1] Send scrolling event to background
+    if (this._isLoaded)
+      chrome.extension.sendMessage(null, {msg: "scroll", data: ReplayLocator.generateRules() });
   };
 
   this.showReplayDialog = function(e) {
@@ -87,27 +99,30 @@ function contentMsgDispatcher(message, sender, cbSendResp) {
       return true;
     }
   } else if (message.msg === "replayLocation") {
-    var g_replayDialog = $('<div id="dkcgmhmeeaalogijmpcjnfiphgpicbfa_replayDialog">' +
+    g_contentMgr._replayDialog = $('<div id="dkcgmhmeeaalogijmpcjnfiphgpicbfa_replayDialog">' +
         '<div>' +
         '<p"><span>Go to original position?</span>' +
         '<a class="btn btn-small btn-success" id="wf_replayLocator_yes" href="#">GO</a>' +
         '<a class="btn btn-small btn-inverse" id="wf_replayLocator_no" href="#">&times;</a>' +
         '</p></div></div>');
-    g_replayDialog.appendTo("body");
-    var g_replayDialogTimer = setTimeout(function() {
-      ReplayLocator.replayWithRules(message.replayLocatorData);
-      g_replayDialog.remove();
+    g_contentMgr._replayDialog.appendTo("body");
+    g_contentMgr._replayDialogTimer = setTimeout(function() {
+      //ReplayLocator.replayWithRules(message.replayLocatorData);
+      g_contentMgr._replayDialog.remove();
+      g_contentMgr._replayDialogTimer = null;
     }, 5000);
-    g_replayDialog.find("#wf_replayLocator_yes").click(function(e) {
+    g_contentMgr._replayDialog.find("#wf_replayLocator_yes").click(function(e) {
       e.preventDefault();
       ReplayLocator.replayWithRules(message.replayLocatorData);
-      g_replayDialog.remove();
-      clearTimeout(g_replayDialogTimer);
+      g_contentMgr._replayDialog.remove();
+      clearTimeout(g_contentMgr._replayDialogTimer);
+      g_contentMgr._replayDialogTimer = null;
     });
-    g_replayDialog.find("#wf_replayLocator_no").click(function(e) {
+    g_contentMgr._replayDialog.find("#wf_replayLocator_no").click(function(e) {
       e.preventDefault();
-      g_replayDialog.remove();
-      clearTimeout(g_replayDialogTimer);
+      g_contentMgr._replayDialog.remove();
+      clearTimeout(g_contentMgr._replayDialogTimer);
+      g_contentMgr._replayDialogTimer = null;
     });
 
     //ReplayLocator.replayWithRules(message.replayLocatorData);
@@ -121,7 +136,8 @@ $(document).ready(function() {
 });
 
 $(window).load(function() {
+  g_contentMgr._isLoaded = true;
   chrome.extension.sendMessage(null, {msg: "pageOnLoad"});
-  $(document).scroll(g_contentMgr.onScroll);
+  $(document).scroll(g_contentMgr.onScroll.bind(g_contentMgr));
 });
 
