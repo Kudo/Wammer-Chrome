@@ -98,6 +98,7 @@ function ActionManager(options) {
   this.sendHeartBeat = function(tabMgr) {
     console.debug("[Enter] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
     if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
+    if (tabMgr.pageInfo.uri.match(/waveface\.com/)) { return; }
 
     // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
 
@@ -222,6 +223,7 @@ function mapChromeTabToKey(chromeTab) {
 function TabManagerContainer() {
   this._tabContainer = {};
   this._activeTab = null;
+  this._focusedWindowId = chrome.windows.WINDOW_ID_NONE;
 };
 
 TabManagerContainer.prototype.add = function(tabMgr) {
@@ -262,26 +264,9 @@ TabManagerContainer.prototype.setActiveTab = function(tabMgr) {
 
 TabManagerContainer.prototype.onTabActivated = function(activeInfo) {
   console.debug("[Enter] TabManagerContainer.onTabActivated(). activeInfo[%o]", activeInfo);
-  var origActiveTab = this.getActiveTab();
-  if (origActiveTab) {
-    origActiveTab.disableMonitor();
-  }
-  var currActiveTab = this.getById(activeInfo.windowId, activeInfo.tabId);
-  if (!currActiveTab) {
-    console.warn("TabManagerContainer.onTabActivated() - Unable to find currActiveTab. activeInfo[%o]", activeInfo);
-  } else {
-    this.setActiveTab(currActiveTab);
-    if (typeof(currActiveTab.pageInfo.screenshots) === "undefined" &&
-        typeof(currActiveTab.pageInfo.uri) === "string" && currActiveTab.pageInfo.uri.match(/^https?:\/\//)) {
-      // Due to Chrome SDK's limitation which can only capture screenshot at current selected tab.
-      // If user open tabs in background, we will only be able to capture screenshot lately when user select the tab as foreground.
-      // Otherwise, if user never set the tab as foreground, we don't have chance to capture the screenshot.
-      g_actMgr.captureScreenshot(currActiveTab, "head", function() {
-        g_actMgr.sendHeartBeat(currActiveTab);
-      });
-    }
-    currActiveTab.enableMonitor();
-  }
+
+  this.updateActiveTab();
+
   console.debug("[Leave] TabManagerContainer.onTabActivated(). activeInfo[%o]", activeInfo);
 };
 
@@ -313,6 +298,62 @@ TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeT
   console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
 };
 
+TabManagerContainer.prototype.onWindowFocusChanged = function(windowId) {
+  console.debug("[Enter] TabManagerContainer.onWindowFocusChanged(). windowId[%d]", windowId);
+
+  this._focusedWindowId = windowId;
+  this.updateActiveTab();
+
+  console.debug("[Leave] TabManagerContainer.onWindowFocusChanged(). windowId[%d]", windowId);
+};
+
+TabManagerContainer.prototype.updateActiveTab = function() {
+  console.debug("[Enter] TabManagerContainer.updateActiveTab().");
+
+  var tabMgrContainer = this;
+
+  // [0] Disable old active tab's monitor
+  var origActiveTab = tabMgrContainer.getActiveTab();
+  if (origActiveTab) {
+    origActiveTab.disableMonitor();
+  }
+
+  // [1] Handle new active tab
+  if (tabMgrContainer._focusedWindowId === chrome.windows.WINDOW_ID_NONE) {
+    tabMgrContainer.setActiveTab(null);
+  } else {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (tabs.length <= 0) {
+        console.warn("TabManagerContainer.updateActiveTab() - Unable to find current active tab.");
+        return;
+      }
+      var currActiveTab = tabMgrContainer.get(tabs[0]);
+      if (!currActiveTab) {
+        console.warn("TabManagerContainer.updateActiveTab() - Unable to find current active tab. tabs[0][%o]", tabs[0]);
+        return;
+      }
+
+      // [1-0] Set active tab
+      tabMgrContainer.setActiveTab(currActiveTab);
+
+      // [1-1] Capture screenshot if not captured before
+      if (typeof(currActiveTab.pageInfo.screenshots) === "undefined" &&
+        typeof(currActiveTab.pageInfo.uri) === "string" && currActiveTab.pageInfo.uri.match(/^https?:\/\//)) {
+        // Due to Chrome SDK's limitation which can only capture screenshot at current selected tab.
+        // If user open tabs in background, we will only be able to capture screenshot lately when user select the tab as foreground.
+        // Otherwise, if user never set the tab as foreground, we don't have chance to capture the screenshot.
+        g_actMgr.captureScreenshot(currActiveTab, "head", function() {
+          g_actMgr.sendHeartBeat(currActiveTab);
+        });
+      }
+
+      // [1-2] Enable monitor
+      currActiveTab.enableMonitor();
+    });
+  }
+
+  console.debug("[Leave] TabManagerContainer.updateActiveTab().");
+};
 
 
 function TabManager(chromeTab) {
@@ -423,6 +464,7 @@ chrome.tabs.onCreated.addListener(g_tabMgrContainer.onTabCreated.bind(g_tabMgrCo
 chrome.tabs.onRemoved.addListener(g_tabMgrContainer.onTabRemoved.bind(g_tabMgrContainer));
 chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
 chrome.tabs.onUpdated.addListener(g_tabMgrContainer.onTabUpdated.bind(g_tabMgrContainer));
+chrome.windows.onFocusChanged.addListener(g_tabMgrContainer.onWindowFocusChanged.bind(g_tabMgrContainer));
 chrome.windows.getAll({ populate: true }, function(windows) {
   for (var iWindow = 0, windowsCount = windows.length; iWindow < windowsCount; ++iWindow) {
     for (var iTab = 0, iTabCount = windows[iWindow].tabs.length; iTab < iTabCount; ++iTab) {
