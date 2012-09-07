@@ -4,11 +4,12 @@
     "default_locale": "en",
     "manifest_version": 2,
     "background": {
-	"scripts": ["jquery.js", "TabController.js"]
+	"scripts": ["TabController.js", "moment.js", "HistoryExporter.js"]
     },
     "permissions": [
 	"tabs",
 	"geolocation",
+	"history",
 	"http://*/*",
 	"https://*/*"
     ],
