@@ -98,7 +98,7 @@ function ActionManager(options) {
   this.sendHeartBeat = function(tabMgr) {
     console.debug("[Enter] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
     if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
-    if (tabMgr.pageInfo.uri.match(/waveface\.com/)) { return; }
+    if (this.isBlacklistUri(tabMgr.pageInfo.uri)) { return; }
 
     // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
 
@@ -210,6 +210,15 @@ function ActionManager(options) {
     chrome.tabs.create({url: portalUrl});
   };
 
+  this.isBlacklistUri = function(uri) {
+    // [0] Exclude waveface.com
+    var escapedLink = "__WFLINK__".replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+    var re = new RegExp(escapedLink, "g");
+    if (uri.match(re)) {
+      return true;
+    }
+    return false;
+  };
 };
 
 function mapTabIdToKey(windowId, tabId) {
