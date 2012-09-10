@@ -11,6 +11,47 @@ function getExtInfo(oid, completeHandler) {
   });
 };
 
+function updateHistDialogProgress(progress) {
+  console.log("histDialogProgressBar(). progress[%d]", progress);
+  $("#histDialogProgressBar").css("width", progress + "%");
+  if (progress >= 100) {
+    $("#histDialog").modal("hide");
+    window.location.reload();
+  }
+};
+
+function showHistDialog() {
+  console.log("showHistDialog");
+  var histDialog =
+    $('<div id="histDialog" class="modal hide fade">' +
+        '<div class="modal-header">' +
+        '<a class="close" data-dismiss="modal" >&times;</a>' +
+        '<h3>Import history?</h3>' +
+        '</div>' +
+
+        '<div class="modal-body">' +
+        '<p>Do you want to import your history data . Press Yes to import your history data from Google Chrome.</p>' +
+        '<div style="display: none;" id="histDialogProgress"><div class="bar" id="histDialogProgressBar"></div></div>' +
+        '</div>' +
+
+        '<div class="modal-footer">' +
+        '<a href="#" id="noButton" class="btn">No</a>' +
+        '<a href="#" id="yesButton" class="btn btn-primary">Yes</a>' +
+        '</div>' +
+        '</div>');
+
+  histDialog.find('#yesButton').click(function(e) {
+    histDialog.find('#histDialogProgress').addClass("progress").show();
+    chrome.extension.sendMessage(null, {msg: "importHistory"});
+  });
+
+  histDialog.find('#noButton').click(function(e) {
+    histDialog.modal('hide');
+  });
+
+  histDialog.modal('show');
+};
+
 $("#Portals").on("click", "a.extPage", function(e) {
   e.preventDefault();
   var elem = $(e.currentTarget);
@@ -21,5 +62,15 @@ $("#Portals").on("click", "a.extPage", function(e) {
       url: elem.attr("href"),
       replayLocatorData: extInfo.replayLocator,
     });
+  });
+});
+
+
+$(window).load(function() {
+  chrome.extension.sendMessage(null, {msg: "checkShowHistDialog"}, function(isShowHistDialog) {
+    console.log("checkShowHistDialog: ", isShowHistDialog);
+    if (isShowHistDialog) {
+      showHistDialog();
+    }
   });
 });

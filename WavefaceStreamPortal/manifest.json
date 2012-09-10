@@ -31,8 +31,9 @@
 	    "run_at": "document_start"
 	},
 	{
-	    "matches": ["__WFLINK__/test/portal", "__WFLINK__/portal/"],
-	    "js": ["WebViewerHandler.js"]
+	    "matches": ["__WFLINK__/portal/"],
+	    "js": ["bootstrap/js/bootstrap.min.js", "WebViewerHandler.js"],
+	    "css": ["bootstrap/css/bootstrap.min.css"]
 	}
     ],
     "web_accessible_resources": [

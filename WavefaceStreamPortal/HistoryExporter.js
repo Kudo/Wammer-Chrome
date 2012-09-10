@@ -18,8 +18,8 @@ HistoryExporter.prototype.composeFeedData = function(histItem) {
     uri: histItem.url,
     title: histItem.title,
     startTime: histItem.lastVisitTime,    // FIXME: Format ? lastVisitTime can be override.
-    duration: 5,                          // FIXME: DON'T hardcode here.
     from: 'history',
+    duration: 5,                          // FIXME: remove it.
     client: {
       name: "Stream Portal Chrome Extension",
       version: "__VERSION__"
@@ -52,17 +52,23 @@ HistoryExporter.prototype.sendFeedData = function(histItem) {
 
 HistoryExporter.prototype.histItemHandler = HistoryExporter.prototype.sendFeedData;
 
-HistoryExporter.prototype.exportAll = function() {
-  for (var endDate = moment(), startDate = moment(endDate).subtract("days", 1);
+HistoryExporter.prototype.exportAll = function(portalTabId) {
+  var totalCount = moment().diff(this.oldestDate, "months");
+  for (var endDate = moment(), startDate = moment(endDate).subtract("months", 1), i = 0;
       endDate >= this.oldestDate;
-      endDate = moment(startDate).subtract("seconds", 1), startDate = moment(endDate).subtract("days", 1))
+      endDate = moment(startDate).subtract("seconds", 1), startDate = moment(endDate).subtract("months", 1), ++i)
   {
     this.exportFromDateRange(startDate, endDate);
+
+    if (portalTabId) {
+      var progress = Math.floor(i * 100 / totalCount);
+      chrome.tabs.executeScript(portalTabId, {code: "updateHistDialogProgress(" + progress + ")"});
+    }
   }
 };
 
 HistoryExporter.prototype.exportFromDateRange = function(startDate, endDate) {
-  console.debug("HistoryExporter.exportFromDateRange(). startDate[%s] endDate[%s]", startDate.format(), endDate.format());
+  console.debug("HistoryExporter.exportFromDateRange(). startDate[%o] endDate[%o]", startDate, endDate);
   var histExporter = this;
   chrome.history.search({text:"", startTime: startDate.valueOf(), endTime: endDate.valueOf(), maxResults: 2147483647}, function(histItems) {
     for (var i = 0, len = histItems.length; i < len; ++i) {

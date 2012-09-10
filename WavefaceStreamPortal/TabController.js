@@ -16,7 +16,7 @@ function installNotice(downloadUrl) {
 var g_actMgr = new ActionManager();
 var g_tabMgrContainer = new TabManagerContainer();
 
-function extMsgDispatcher(message, sender) {
+function extMsgDispatcher(message, sender, cbSendResp) {
   var tabMgr = g_tabMgrContainer.getById(sender.tab.windowId, sender.tab.id);
   if (!tabMgr) { return; }
 
@@ -42,6 +42,12 @@ function extMsgDispatcher(message, sender) {
       // FIXME: race condition ? if change to another tab between this two statements?
       g_actMgr.captureScreenshot(tabMgr);
     }
+  } else if (message.msg === "checkShowHistDialog") {
+    cbSendResp(g_actMgr.checkShowHistDialog());
+    return true;
+  } else if (message.msg === "importHistory") {
+    var histExporter = new HistoryExporter();
+    histExporter.exportAll(tabMgr.tabId);
   }
 
   return false;
@@ -215,6 +221,14 @@ function ActionManager(options) {
     var escapedLink = "__WFLINK__".replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
     var re = new RegExp(escapedLink, "g");
     if (uri.match(re)) {
+      return true;
+    }
+    return false;
+  };
+
+  this.checkShowHistDialog = function() {
+    if (!localStorage.isShowHistDialog) {
+      localStorage.isShowHistDialog = true;
       return true;
     }
     return false;
