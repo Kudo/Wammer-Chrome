@@ -18,7 +18,7 @@ HistoryExporter.prototype.composeFeedData = function(histItem) {
     version: 1,
     uri: histItem.url,
     title: histItem.title,
-    last_access: histItem.visitTime.unix(),
+    last_access: histItem.visitTime.utc().unix(),
     from: 'history',
     client: {
       name: "Stream Portal Chrome Extension",
