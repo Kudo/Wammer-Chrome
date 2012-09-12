@@ -1,5 +1,5 @@
 function getExtInfo(oid, completeHandler) {
-  var uri = "https://devweb.waveface.com/api";
+  var uri = "__WFLINK__/api";
   var data = {
     api: "/sportal/get",
     data: JSON.stringify({
@@ -67,7 +67,6 @@ $("#Portals").on("click", "a.extPage", function(e) {
     });
   });
 });
-
 
 $(document).ready(function() {
   chrome.extension.sendMessage(null, {msg: "checkShowHistDialog"}, function(isShowHistDialog) {

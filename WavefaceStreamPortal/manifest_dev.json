@@ -34,7 +34,12 @@
 	    "matches": ["__WFLINK__/portal/"],
 	    "js": ["bootstrap/js/bootstrap.min.js", "WebViewerHandler.js"],
 	    "css": ["bootstrap/css/bootstrap.min.css"]
+	},
+	{
+	    "matches": ["__WFLINK__/timeline"],
+	    "js": ["TimelineHandler.js"]
 	}
+
     ],
     "web_accessible_resources": [
 	"bootstrap/img/glyphicons-halflings.png",
