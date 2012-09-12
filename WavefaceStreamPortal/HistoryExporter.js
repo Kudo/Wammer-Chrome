@@ -9,8 +9,9 @@
  */
 function HistoryExporter() {
   //this.oldestDate = moment(new Date('2012/01/01'));
-  this.oldestDate = moment().subtract('days', 7).startOf('day');
+  this.oldestDate = moment().subtract('months', 3).startOf('day');
   this.wfWebUrl = "__WFLINK__";
+  this.histItemsToCloudTheshold = 500;
 };
 
 HistoryExporter.prototype.composeFeedData = function(histItem) {
@@ -28,14 +29,20 @@ HistoryExporter.prototype.composeFeedData = function(histItem) {
   return feedData
 };
 
-HistoryExporter.prototype.sendFeedData = function(histItem) {
+HistoryExporter.prototype.sendFeedData = function() {
   // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
+  if (g_histItemsCount <= 0) { return; }
 
   var histExporter = this;
   var uri = this.wfWebUrl + "/api";
+  var dataList = [];
+  for (var i = 0; i < g_histItemsCount; ++i) {
+    dataList.push(this.composeFeedData(g_histItems[i]));
+  }
   var data = {
-    feed_data: this.composeFeedData(histItem)
+    feed_data: dataList
   };
+
   var qs = "api=" + encodeURIComponent('/sportal/feed') + "&data=" + encodeURIComponent(JSON.stringify(data));
 
   var xhr = new XMLHttpRequest();
@@ -46,9 +53,23 @@ HistoryExporter.prototype.sendFeedData = function(histItem) {
   if (xhr.status != 200) {
     console.error("HistoryExporter.sendFeedData() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
   }
+
+  g_histItems = [];
+  g_histItemsCount = 0;
 };
 
-HistoryExporter.prototype.histItemHandler = HistoryExporter.prototype.sendFeedData;
+var g_histItemsCount = 0;
+var g_histItems = [];
+
+HistoryExporter.prototype.histItemHandler = function(histItem) {
+  console.log(g_histItemsCount);
+  if (g_histItemsCount <= this.histItemsToCloudTheshold) {
+    g_histItems.push(histItem);
+    ++g_histItemsCount;
+  } else {
+    this.sendFeedData();
+  }
+};
 
 HistoryExporter.prototype.exportAll = function(portalTabId) {
   var totalCount = Math.floor(moment().diff(this.oldestDate, "days", true));
@@ -77,6 +98,7 @@ HistoryExporter.prototype.exportFromDateRange = function(startDate, endDate, com
       histExporter.histItemHandler(histItems[i]);
     }
 
+    histExporter.sendFeedData();
     if (completeHandler) { completeHandler(); }
   });
 };
