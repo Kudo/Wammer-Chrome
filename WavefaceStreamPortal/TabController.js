@@ -81,7 +81,7 @@ function ActionManager(options) {
       version: 1,
       uri: tabMgr.pageInfo.uri,
       title: tabMgr.pageInfo.title,
-      startTime: tabMgr.pageInfo.startTime,
+      //startTime: tabMgr.pageInfo.startTime,
       duration: tabMgr.pageInfo.duration,
       favicon: tabMgr.pageInfo.favicon,
       extInfo: tabMgr.pageInfo.extInfo,

@@ -9,7 +9,7 @@
  */
 function HistoryExporter() {
   //this.oldestDate = moment(new Date('2012/01/01'));
-  this.oldestDate = moment().subtract('days', 7);
+  this.oldestDate = moment().subtract('days', 7).startOf('day');
   this.wfWebUrl = "__WFLINK__";
 };
 
@@ -18,9 +18,8 @@ HistoryExporter.prototype.composeFeedData = function(histItem) {
     version: 1,
     uri: histItem.url,
     title: histItem.title,
-    startTime: histItem.lastVisitTime,    // FIXME: Format ? lastVisitTime can be override.
+    last_access: histItem.visitTime.unix(),
     from: 'history',
-    duration: 5,                          // FIXME: remove it.
     client: {
       name: "Stream Portal Chrome Extension",
       version: "__VERSION__"
@@ -52,7 +51,7 @@ HistoryExporter.prototype.sendFeedData = function(histItem) {
 HistoryExporter.prototype.histItemHandler = HistoryExporter.prototype.sendFeedData;
 
 HistoryExporter.prototype.exportAll = function(portalTabId) {
-  var totalCount = moment().diff(this.oldestDate, "days");
+  var totalCount = Math.floor(moment().diff(this.oldestDate, "days", true));
   for (var endDate = moment(), startDate = moment(endDate).subtract("days", 1), i = 0;
       endDate >= this.oldestDate;
       endDate = moment(startDate).subtract("seconds", 1), startDate = moment(endDate).subtract("days", 1), ++i)
@@ -74,6 +73,7 @@ HistoryExporter.prototype.exportFromDateRange = function(startDate, endDate, com
   chrome.history.search({text:"", startTime: startDate.valueOf(), endTime: endDate.valueOf(), maxResults: 2147483647}, function(histItems) {
     console.info("HistoryExporter.exportFromDateRange(). startDate[%o] endDate[%o]", startDate, endDate);
     for (var i = 0, len = histItems.length; i < len; ++i) {
+      histItems[i].visitTime = startDate;   // FIXME: Since Chrome SDK's HistoryItem does not return visitTime, we simply use startDate as output.
       histExporter.histItemHandler(histItems[i]);
     }
 

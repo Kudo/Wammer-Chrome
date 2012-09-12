@@ -1,5 +1,5 @@
 function getExtInfo(oid, completeHandler) {
-  var uri = "__WFLINK__/api";
+  var uri = "https://devweb.waveface.com/api";
   var data = {
     api: "/sportal/get",
     data: JSON.stringify({
@@ -12,7 +12,7 @@ function getExtInfo(oid, completeHandler) {
 };
 
 function updateHistDialogProgress(progress) {
-  console.log("histDialogProgressBar(). progress[%d]", progress);
+  console.info("histDialogProgressBar() - progress[%d]", progress);
   $("#histDialogProgressBar").css("width", progress + "%");
   if (progress >= 100) {
     $("#histDialog").modal("hide");
@@ -21,7 +21,7 @@ function updateHistDialogProgress(progress) {
 };
 
 function showHistDialog() {
-  console.log("showHistDialog");
+  console.debug("[Enter] showHistDialog()");
   var histDialog =
     $('<div id="histDialog" class="modal hide fade">' +
         '<div class="modal-header">' +
@@ -41,6 +41,7 @@ function showHistDialog() {
         '</div>');
 
   histDialog.find('#yesButton').click(function(e) {
+    histDialog.find('.modal-body > p').text("Importing...");
     histDialog.find('#histDialogProgress').addClass("progress").show();
     chrome.extension.sendMessage(null, {msg: "importHistory"});
   });
@@ -50,6 +51,7 @@ function showHistDialog() {
   });
 
   histDialog.modal('show');
+  console.debug("[Leave] showHistDialog()");
 };
 
 $("#Portals").on("click", "a.extPage", function(e) {
@@ -66,9 +68,8 @@ $("#Portals").on("click", "a.extPage", function(e) {
 });
 
 
-$(window).load(function() {
+$(document).ready(function() {
   chrome.extension.sendMessage(null, {msg: "checkShowHistDialog"}, function(isShowHistDialog) {
-    console.log("checkShowHistDialog: ", isShowHistDialog);
     if (isShowHistDialog) {
       showHistDialog();
     }
