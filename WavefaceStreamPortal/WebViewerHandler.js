@@ -42,6 +42,7 @@ function showHistDialog() {
 
   histDialog.find('#yesButton').click(function(e) {
     histDialog.find('.modal-body > p').text("Importing...");
+    histDialog.find('.modal-footer').remove();
     histDialog.find('#histDialogProgress').addClass("progress").show();
     chrome.extension.sendMessage(null, {msg: "importHistory"});
   });
