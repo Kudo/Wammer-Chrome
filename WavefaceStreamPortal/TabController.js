@@ -11,7 +11,7 @@ function installNotice(downloadUrl) {
     localStorage.version = details.version;
   }
 };
-//installNotice("__WFLINK__/StreamPortal/welcome");
+installNotice("__WFLINK__/StreamPortal/welcome");
 
 var g_actMgr = new ActionManager();
 var g_tabMgrContainer = new TabManagerContainer();
@@ -434,11 +434,9 @@ TabManager.prototype.onPageDomContentLoaded = function() {
     if (!chromeTab.url.match(/^https?:\/\//)) { return; }
     tabMgr.pageInfo.uri = chromeTab.url || "";
     tabMgr.pageInfo.title = chromeTab.title || "";
-    tabMgr.pageInfo.favicon = chromeTab.favIconUrl || undefined;
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
     tabMgr.pageInfo.extInfo = { version: 1 };
-    g_actMgr.sendHeartBeat(tabMgr);
   });
 
   // [2] Check if open tab with replayLocator
@@ -454,13 +452,20 @@ TabManager.prototype.onPageDomContentLoaded = function() {
 TabManager.prototype.onPageLoad = function() {
   console.debug("[Enter] TabManager.onPageLoad() - tabMgr.key[%s]", this.key);
 
-  if (this === g_tabMgrContainer.getActiveTab()) {
-    this.enableMonitor();
+  var tabMgr = this;
+  chrome.tabs.get(tabMgr.tabId, function(chromeTab) {
+    if (!chromeTab.url.match(/^https?:\/\//)) { return; }
+    tabMgr.pageInfo.favicon = chromeTab.favIconUrl || undefined;
 
-    // FIXME: race condition ? if change to another tab between this two statements?
-    g_actMgr.captureScreenshot(this);
-    g_actMgr.sendHeartBeat(this);
-  }
+    if (tabMgr === g_tabMgrContainer.getActiveTab()) {
+      tabMgr.enableMonitor();
+
+      // FIXME: race condition ? if change to another tab between this two statements?
+      g_actMgr.captureScreenshot(tabMgr);
+    }
+
+    g_actMgr.sendHeartBeat(tabMgr);
+  });
 
   console.debug("[Leave] TabManager.onPageLoad() - tabMgr.key[%s]", this.key);
 };
