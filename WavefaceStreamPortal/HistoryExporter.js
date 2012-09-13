@@ -9,7 +9,7 @@
  */
 function HistoryExporter() {
   //this.oldestDate = moment(new Date('2012/01/01'));
-  this.oldestDate = moment().subtract('months', 3).startOf('day');
+  this.oldestDate = moment().subtract('days', 14).startOf('day');
   this.wfWebUrl = "__WFLINK__";
   this.histItemsToCloudTheshold = 500;
 };
@@ -21,6 +21,7 @@ HistoryExporter.prototype.composeFeedData = function(histItem) {
     title: histItem.title,
     last_access: histItem.visitTime.utc().unix(),
     from: 'history',
+    duration: 5,          // FIXME: currently hardcoded 5 seconds to force history data shown in portal site
     client: {
       name: "Stream Portal Chrome Extension",
       version: "__VERSION__"
