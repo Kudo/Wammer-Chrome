@@ -55,7 +55,7 @@ function showHistDialog() {
   console.debug("[Leave] showHistDialog()");
 };
 
-$("#Portals").on("click", "a.extPage", function(e) {
+$("#main").on("click", "a.extPage", function(e) {
   e.preventDefault();
   var elem = $(e.currentTarget);
   var oid = elem.attr("data-oid");
