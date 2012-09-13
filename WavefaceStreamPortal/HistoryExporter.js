@@ -63,7 +63,6 @@ var g_histItemsCount = 0;
 var g_histItems = [];
 
 HistoryExporter.prototype.histItemHandler = function(histItem) {
-  console.log(g_histItemsCount);
   if (g_histItemsCount <= this.histItemsToCloudTheshold) {
     g_histItems.push(histItem);
     ++g_histItemsCount;
@@ -86,14 +85,16 @@ HistoryExporter.prototype.exportAll = function(portalTabId) {
         }
       }
     };
-    this.exportFromDateRange(startDate, endDate, fComplete(progress));
+    this.exportFromDateRange(startDate, endDate, portalTabId, fComplete(progress));
   }
 };
 
-HistoryExporter.prototype.exportFromDateRange = function(startDate, endDate, completeHandler) {
+HistoryExporter.prototype.exportFromDateRange = function(startDate, endDate, portalTabId, completeHandler) {
   var histExporter = this;
   chrome.history.search({text:"", startTime: startDate.valueOf(), endTime: endDate.valueOf(), maxResults: 2147483647}, function(histItems) {
     console.info("HistoryExporter.exportFromDateRange(). startDate[%o] endDate[%o]", startDate, endDate);
+    var dateStr = (startDate.month() + 1) + "/" + startDate.date();
+    chrome.tabs.executeScript(portalTabId, {code: "updateHistDialogDate('" + dateStr + "')"});
     for (var i = 0, len = histItems.length; i < len; ++i) {
       histItems[i].visitTime = startDate;   // FIXME: Since Chrome SDK's HistoryItem does not return visitTime, we simply use startDate as output.
       histExporter.histItemHandler(histItems[i]);

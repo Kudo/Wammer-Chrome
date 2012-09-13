@@ -12,13 +12,19 @@ function getExtInfo(oid, completeHandler) {
 };
 
 function updateHistDialogProgress(progress) {
-  console.info("histDialogProgressBar() - progress[%d]", progress);
+  console.info("histDialogProgress() - progress[%d]", progress);
   $("#histDialogProgressBar").css("width", progress + "%");
   if (progress >= 100) {
     $("#histDialog").modal("hide");
     window.location.reload();
   }
 };
+
+function updateHistDialogDate(dateStr) {
+  console.info("histDialogDate() - dateStr[%s]", dateStr);
+  $("#histDialog").find('.modal-body > p').text("Importing " + dateStr + " ...");
+};
+
 
 function showHistDialog() {
   console.debug("[Enter] showHistDialog()");
