@@ -22,7 +22,7 @@ function updateHistDialogProgress(progress) {
 
 function updateHistDialogDate(dateStr) {
   console.info("histDialogDate() - dateStr[%s]", dateStr);
-  $("#histDialog").find('.modal-body > p').text("Importing " + dateStr + " ...");
+  $("#histDialog").find('.modal-body > p').text("Importing (Date: " + dateStr + ") ...");
 };
 
 

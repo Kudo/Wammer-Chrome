@@ -93,10 +93,10 @@ HistoryExporter.prototype.exportFromDateRange = function(startDate, endDate, por
   var histExporter = this;
   chrome.history.search({text:"", startTime: startDate.valueOf(), endTime: endDate.valueOf(), maxResults: 2147483647}, function(histItems) {
     console.info("HistoryExporter.exportFromDateRange(). startDate[%o] endDate[%o]", startDate, endDate);
-    var dateStr = (startDate.month() + 1) + "/" + startDate.date();
+    var dateStr = moment.monthsShort[startDate.month()] + " " + startDate.date();
     chrome.tabs.executeScript(portalTabId, {code: "updateHistDialogDate('" + dateStr + "')"});
     for (var i = 0, len = histItems.length; i < len; ++i) {
-      histItems[i].visitTime = startDate;   // FIXME: Since Chrome SDK's HistoryItem does not return visitTime, we simply use startDate as output.
+      histItems[i].visitTime = endDate;   // FIXME: Since Chrome SDK's HistoryItem does not return visitTime, we simply use endDate as output.
       histExporter.histItemHandler(histItems[i]);
     }
 
