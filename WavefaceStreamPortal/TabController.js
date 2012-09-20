@@ -246,7 +246,11 @@ function mapChromeTabToKey(chromeTab) {
 function TabManagerContainer() {
   this._tabContainer = {};
   this._activeTab = null;
-  this._focusedWindowId = chrome.windows.WINDOW_ID_NONE;
+
+  var tabMgrContainer = this;
+  chrome.windows.getCurrent(null, function(chromeWindow) {
+    tabMgrContainer._focusedWindowId = chromeWindow.id;
+  });
 };
 
 TabManagerContainer.prototype.add = function(tabMgr) {
@@ -306,8 +310,10 @@ TabManagerContainer.prototype.onTabRemoved = function(tabId) {
   var tabMgr = g_tabMgrContainer.getById(null, tabId);
   if (!tabMgr) { return; }
   g_actMgr.sendHeartBeat(tabMgr);
+  if (tabMgr === g_tabMgrContainer.getActiveTab()) {
+    this.setActiveTab(null);
+  }
   this.remove(tabMgr);
-  this.setActiveTab(null);
 
   console.debug("[Leave] TabManagerContainer.onTabRemoved().");
 };
