@@ -289,6 +289,17 @@ TabManagerContainer.prototype.setActiveTab = function(tabMgr) {
   console.debug("[Leave] TabManagerContainer.setActiveTab(). tabKey[%s]", tabKey);
 };
 
+TabManagerContainer.prototype.onTabWindowAttached = function(tabId, attachInfo) {
+  console.debug("[Enter] TabManagerContainer.onTabWindowAttached(). tabId[%d] attachInfo[%o]", tabId, attachInfo);
+
+  var tabMgr = g_tabMgrContainer.getById(null, tabId);
+  if (!tabMgr) { return; }
+  tabMgr.windowId = attachInfo.newWindowId;
+  tabMgr.key = mapTabIdToKey(tabMgr.windowId, tabId);
+
+  console.debug("[Leave] TabManagerContainer.onTabWindowAttached(). tabId[%d] attachInfo[%o]", tabId, attachInfo);
+};
+
 TabManagerContainer.prototype.onTabActivated = function(activeInfo) {
   console.debug("[Enter] TabManagerContainer.onTabActivated(). activeInfo[%o]", activeInfo);
 
@@ -496,6 +507,7 @@ chrome.browserAction.setBadgeText({text: ""});
 
 chrome.tabs.onCreated.addListener(g_tabMgrContainer.onTabCreated.bind(g_tabMgrContainer));
 chrome.tabs.onRemoved.addListener(g_tabMgrContainer.onTabRemoved.bind(g_tabMgrContainer));
+chrome.tabs.onAttached.addListener(g_tabMgrContainer.onTabWindowAttached.bind(g_tabMgrContainer));
 chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
 chrome.tabs.onUpdated.addListener(g_tabMgrContainer.onTabUpdated.bind(g_tabMgrContainer));
 chrome.windows.onFocusChanged.addListener(g_tabMgrContainer.onWindowFocusChanged.bind(g_tabMgrContainer));
