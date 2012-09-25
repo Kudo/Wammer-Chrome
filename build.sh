@@ -25,6 +25,7 @@ function build_crx {
     env=$4
     dev=$5
     min=$6
+    heartbeatRate=$7
 
     procDir="$env-WavefaceStreamPortal"
     rm -rf $procDir
@@ -33,6 +34,7 @@ function build_crx {
     #replace_tag "$procDir/background.html" '__WFLINK__' $wflink
     replace_tag "$procDir/TabController.js" '__WFLINK__' $wflink
     replace_tag "$procDir/TabController.js" '__VERSION__' $version
+    replace_tag "$procDir/TabController.js" '__HEARTBEAT_RATE__' $heartbeatRate
     replace_tag "$procDir/TimelineHandler.js" '__WFLINK__' $wflink
     replace_tag "$procDir/WebViewerHandler.js" '__WFLINK__' $wflink
     replace_tag "$procDir/HistoryExporter.js" '__WFLINK__' $wflink
@@ -65,9 +67,9 @@ function build_crx {
 rm -rf output
 
 mkdir -p output
-build_crx 'support.Portal@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' '' ''
-build_crx 'develop.Portal@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev' ''
-build_crx 'support.Portal@waveface.com' 'https:\/\/waveface.com' $version 'production' '' 'min'
+build_crx 'support.Portal@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' '' '' '30'
+build_crx 'develop.Portal@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev' '' '5'
+build_crx 'support.Portal@waveface.com' 'https:\/\/waveface.com' $version 'production' '' 'min' '30'
 
 cp -f updates.xml output/
 cp -f updates_dev.xml output/
