@@ -24,6 +24,7 @@ function build_crx {
     version=$3
     env=$4
     dev=$5
+    min=$6
 
     procDir="$env-WavefaceStreamPortal"
     rm -rf $procDir
@@ -46,6 +47,16 @@ function build_crx {
     replace_tag "$procDir/manifest.json" '__VERSION__' $version
     replace_tag "$procDir/manifest.json" '__WFLINK__' $wflink
 
+    if [ "$min" == "min" ]; then
+	for f in ContentManager.js HistoryExporter.js TabController.js TimelineHandler.js WebViewerHandler.js
+	do
+	    f="$procDir/$f"
+	    sed -e '/console\.debug/d' $f > $f.tmp
+	    java -jar compiler.jar --js $f.tmp --js_output_file $f
+	    rm -rf $f.tmp
+	done
+    fi
+
     crxmake --pack-extension="$procDir" --pack-extension-key="portal$dev.pem"
     mv -f "$procDir.crx" "output/$env-WavefaceStreamPortal-$version.crx"
 
@@ -54,9 +65,9 @@ function build_crx {
 rm -rf output
 
 mkdir -p output
-build_crx 'support.Portal@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' ''
-build_crx 'develop.Portal@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev'
-build_crx 'support.Portal@waveface.com' 'https:\/\/waveface.com' $version 'production' ''
+build_crx 'support.Portal@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' '' ''
+build_crx 'develop.Portal@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev' ''
+build_crx 'support.Portal@waveface.com' 'https:\/\/waveface.com' $version 'production' '' 'min'
 
 cp -f updates.xml output/
 cp -f updates_dev.xml output/
