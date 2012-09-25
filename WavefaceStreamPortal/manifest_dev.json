@@ -20,7 +20,7 @@
         "19": "StreamPortal_19.png"
     },
     "browser_action": {
-        "default_title": "Stream Portal (Dev)",
+        "default_title": "Stream Visited Links (Dev)",
         "default_icon": "StreamPortal_19.png"
     },
     "content_scripts": [
