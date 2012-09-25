@@ -19,7 +19,7 @@ $("#timeline-inner").on("click", "a.extPage", function(e) {
     chrome.extension.sendMessage(null, {
       msg: "openPage",
       url: elem.attr("href"),
-      replayLocatorData: extInfo.replayLocator,
+      replayLocatorData: extInfo.replayLocator
     });
   });
 });

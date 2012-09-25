@@ -22,7 +22,8 @@ function updateHistDialogProgress(progress) {
 
 function updateHistDialogDate(dateStr) {
   console.info("histDialogDate() - dateStr[%s]", dateStr);
-  $("#histDialog").find('.modal-body > p').text("Importing (Date: " + dateStr + ") ...");
+  var text = chrome.i18n.getMessage("importHistDialog_importing_with_date").replace("%s", dateStr);
+  $("#histDialog").find('.modal-body > p').text(text);
 };
 
 
@@ -32,22 +33,22 @@ function showHistDialog() {
     $('<div id="histDialog" class="modal hide fade">' +
         '<div class="modal-header">' +
         '<a class="close" data-dismiss="modal" >&times;</a>' +
-        '<h3>Import history?</h3>' +
+        '<h3>' + chrome.i18n.getMessage("importHistDialog_title") + '</h3>' +
         '</div>' +
 
         '<div class="modal-body">' +
-        '<p>Do you want to import your history data . Press Yes to import your history data from Google Chrome.</p>' +
+        '<p>' + chrome.i18n.getMessage("importHistDialog_desc") + '</p>' +
         '<div style="display: none;" id="histDialogProgress"><div class="bar" id="histDialogProgressBar"></div></div>' +
         '</div>' +
 
         '<div class="modal-footer">' +
-        '<a href="#" id="noButton" class="btn">No</a>' +
-        '<a href="#" id="yesButton" class="btn btn-primary">Yes</a>' +
+        '<a href="#" id="noButton" class="btn">' + chrome.i18n.getMessage("importHistDialog_btn_no") + '</a>' +
+        '<a href="#" id="yesButton" class="btn btn-primary">' + chrome.i18n.getMessage("importHistDialog_btn_yes") + '</a>' +
         '</div>' +
         '</div>');
 
   histDialog.find('#yesButton').click(function(e) {
-    histDialog.find('.modal-body > p').text("Importing...");
+    histDialog.find('.modal-body > p').text(chrome.i18n.getMessage("importHistDialog_importing_without_date"));
     histDialog.find('.modal-footer').remove();
     histDialog.find('#histDialogProgress').addClass("progress").show();
     chrome.extension.sendMessage(null, {msg: "importHistory"});
@@ -69,7 +70,7 @@ $("#main").on("click", "a.extPage", function(e) {
     chrome.extension.sendMessage(null, {
       msg: "openPage",
       url: elem.attr("href"),
-      replayLocatorData: extInfo.replayLocator,
+      replayLocatorData: extInfo.replayLocator
     });
   });
 });

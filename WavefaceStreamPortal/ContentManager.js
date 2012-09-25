@@ -101,9 +101,9 @@ function contentMsgDispatcher(message, sender, cbSendResp) {
   } else if (message.msg === "replayLocation") {
     g_contentMgr._replayDialog = $('<div id="dkcgmhmeeaalogijmpcjnfiphgpicbfa_replayDialog">' +
         '<div>' +
-        '<p"><span>Go to original position?</span>' +
-        '<a class="btn btn-small btn-success" id="wf_replayLocator_yes" href="#">GO</a>' +
-        '<a class="btn btn-small btn-inverse" id="wf_replayLocator_no" href="#">&times;</a>' +
+        '<p"><span>' + chrome.i18n.getMessage("replayDialog_desc") + '</span>' +
+        '<a class="btn btn-small btn-success" id="wf_replayLocator_yes" href="#">' + chrome.i18n.getMessage("replayDialog_btn_go") + '</a>' +
+        '<a class="btn btn-small btn-inverse" id="wf_replayLocator_no" href="#">' + chrome.i18n.getMessage("replayDialog_btn_cancel") + '</a>' +
         '</p></div></div>');
     g_contentMgr._replayDialog.appendTo("body");
     g_contentMgr._replayDialogTimer = setTimeout(function() {

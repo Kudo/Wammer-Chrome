@@ -1,6 +1,45 @@
 {
-	"extDesc": {
-		"message": "Still using left-click and “save image as” to collect the photos you like? Now with one-click you can grab all the images from your favorite articles and blogs. It’s the best tool for Travel, Food, and Photography photo collecting from the web.",
-		"description": "extension description"
-	}
+    "extDesc": {
+	"message": "Stream Visited Links: Your smart history recorder. Stream Visited Links saves the webpages you actually read, and makes them easily accessible on all your mobile devices for convenient viewing anywhere.",
+	"description": "extension description"
+    },
+
+    "replayDialog_desc": {
+	"message": "Go to last read position?",
+	"description": "Replay dialog description"
+    },
+    "replayDialog_btn_go": {
+	"message": "GO",
+	"description": "Replay dialog GO button text"
+    },
+    "replayDialog_btn_cancel": {
+	"message": "&times;",
+	"description": "Replay dialog cancel button text"
+    },
+
+    "importHistDialog_title": {
+	"message": "Import History?",
+	"description": "Import history dialog title"
+    },
+    "importHistDialog_desc": {
+	"message": "Press \"Yes\" to import your recent web history into your Stream Account from Google Chrome.",
+	"description": "Import history dialog description"
+    },
+    "importHistDialog_btn_yes": {
+	"message": "Yes",
+	"description": "Import history dialog YES button text"
+    },
+    "importHistDialog_btn_no": {
+	"message": "No",
+	"description": "Import history dialog NO button text"
+    },
+    "importHistDialog_importing_without_date": {
+	"message": "Importing...",
+	"description": "Import history dialog importing without date information"
+    },
+    "importHistDialog_importing_with_date": {
+	"message": "Importing (Date: %s) ...",
+	"description": "Import history dialog importing with date information"
+    }
+
 }
