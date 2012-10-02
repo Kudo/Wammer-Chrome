@@ -19,4 +19,4 @@ function runBookmarklet(bookmarkletUrl) {
 }
 
 chrome.browserAction.onClicked.addListener(runBookmarklet("clipper.js"));
-installNotice("__WFLINK__/StreamPhotoCollector/welcome");
+installNotice("__WFLINK__/StreamPhotoCollector/welcome?client=ChromeExt&clientVer=__VERSION__");
