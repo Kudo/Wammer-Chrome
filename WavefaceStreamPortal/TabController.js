@@ -11,7 +11,7 @@ function installNotice(downloadUrl) {
     localStorage.version = details.version;
   }
 };
-installNotice("__WFLINK__/StreamPortal/welcome");
+installNotice("__WFLINK__/StreamPortal/welcome?client=ChromeExt&clientVer=__VERSION__");
 
 var g_actMgr = new ActionManager();
 var g_tabMgrContainer = new TabManagerContainer();
@@ -214,6 +214,7 @@ function ActionManager(options) {
 
   this.onClickBrowserAction = function(chromeTab) {
     var portalUrl = this.wfWebUrl + "/portal/";
+    portalUrl += "?client=ChromeExt&clientVer=__VERSION__";
     chrome.tabs.create({url: portalUrl});
   };
 
