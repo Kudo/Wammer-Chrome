@@ -442,7 +442,7 @@ TabManager.prototype.onPageLoading = function() {
 
 TabManager.prototype.retrieveGoogleSearchKeywords = function(url) {
 
-  var regex = /https?:\/\/www.google.*\/.*q=([^&]+)&?/;
+  var regex = /https?:\/\/www.google.*\/.*&q=([^&]+)&?/;
   var matches = url.match(regex);
 
   if (matches === null)
