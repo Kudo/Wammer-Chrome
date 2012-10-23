@@ -442,15 +442,13 @@ TabManager.prototype.onPageLoading = function() {
 
 TabManager.prototype.retrieveGoogleSearchKeywords = function(url) {
 
-  var regex = /https?:\/\/www.google.*\/.*&q=([^&]+)&?/;
+  var regex = /https?:\/\/www.google.*\/.*q=([^&]+)&/;
   var matches = url.match(regex);
 
   if (matches === null)
     return null;
-  else {
-    console.debug("keywords: " + matches[1]);
+  else 
     return matches[1];
-  }
 };
 
 TabManager.prototype.onPageDomContentLoaded = function() {
@@ -477,7 +475,7 @@ TabManager.prototype.onPageDomContentLoaded = function() {
       // Since 2011, Google enables Safe Searching, any signed in user's searching keyword no longer exposed to referrer
       // We need to dig them out from browser history
       var startDate = moment().subtract("hours", 4);
-      chrome.history.search({text: 'google.com', startTime:startDate.valueOf(), maxResults: 20}, function(histories) {
+      chrome.history.search({text: '', startTime:startDate.valueOf(), maxResults: 50}, function(histories) {
         for( h in histories ) {
           if (tabMgr.retrieveGoogleSearchKeywords(histories[h]['url']) != null) {
             tabMgr.pageInfo.referrer = histories[h]['url'];
