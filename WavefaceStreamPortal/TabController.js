@@ -85,6 +85,7 @@ function ActionManager(options) {
       duration: tabMgr.pageInfo.duration,
       favicon: tabMgr.pageInfo.favicon,
       extInfo: tabMgr.pageInfo.extInfo,
+      referrer: tabMgr.pageInfo.referrer,
       client: {
         name: "Stream Portal Chrome Extension",
         version: "__VERSION__",
@@ -439,6 +440,19 @@ TabManager.prototype.onPageLoading = function() {
   console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
 };
 
+TabManager.prototype.retrieveGoogleSearchKeywords = function(url) {
+
+  var regex = /https?:\/\/www.google.*\/.*&q=([^&]+)&?/;
+  var matches = url.match(regex);
+
+  if (matches === null)
+    return null;
+  else {
+    console.debug("keywords: " + matches[1]);
+    return matches[1];
+  }
+};
+
 TabManager.prototype.onPageDomContentLoaded = function() {
   console.debug("[Enter] TabManager.onPageDomContentLoaded() - tabMgr.key[%s]", this.key);
 
@@ -456,6 +470,24 @@ TabManager.prototype.onPageDomContentLoaded = function() {
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
     tabMgr.pageInfo.extInfo = { version: 1 };
+  });
+
+  this.execContentJsSync("document.referrer;", function(resp) {
+    if (tabMgr.retrieveGoogleSearchKeywords(resp['data']) === null) {
+      // Since 2011, Google enables Safe Searching, any signed in user's searching keyword no longer exposed to referrer
+      // We need to dig them out from browser history
+      var startDate = moment().subtract("hours", 4);
+      chrome.history.search({text: 'google.com', startTime:startDate.valueOf(), maxResults: 20}, function(histories) {
+        for( h in histories ) {
+          if (tabMgr.retrieveGoogleSearchKeywords(histories[h]['url']) != null) {
+            tabMgr.pageInfo.referrer = histories[h]['url'];
+            break;
+          }
+        }
+      });
+    } else {
+      tabMgr.pageInfo.referrer = resp['data'];
+    }
   });
 
   // [2] Check if open tab with replayLocator
