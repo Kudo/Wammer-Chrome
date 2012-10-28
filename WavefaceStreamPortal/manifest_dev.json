@@ -10,6 +10,7 @@
 	"tabs",
 	"geolocation",
 	"history",
+        "webNavigation",
 	"http://*/*",
 	"https://*/*"
     ],

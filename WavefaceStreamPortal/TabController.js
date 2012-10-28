@@ -336,9 +336,32 @@ TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeT
   console.debug("[Enter] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
   var tabMgr = this.get(chromeTab);
   if (!tabMgr) { return; }
-  if (changeInfo.status == "loading")
-    tabMgr.onPageLoading();
+  if (changeInfo.status == "loading") {
+    var tab = this.getById(null, tabId);
+    if (tab !== undefined)
+      tabMgr.onPageLoading(tab);
+  }
   console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
+};
+
+TabManagerContainer.prototype.onNavChange = function(details) {
+
+  console.debug("[Enter] TabManagerContainer.onNavChange(). tabId[%s] sourceTabId[%s]", details['tabId'], details['sourceTabId']);
+  var srcTab = this.getById(null, details['sourceTabId']);
+  var targetTab = this.getById(null, details['tabId']);
+  if (srcTab === undefined) {
+    console.debug("Unable to find source tab");
+    console.debug("tab manager container: %o", this._tabContainer);
+    return;
+  }
+
+  console.debug("URI of source tab: " + srcTab.pageInfo.uri);
+  if (targetTab.pageInfo === undefined)
+    targetTab.pageInfo = {};
+  targetTab.pageInfo.referrer = srcTab.pageInfo.uri;
+
+  console.debug("[Leave] TabManagerContainer.onNavChange(). tabId[%s] sourceTabId[%s]", details['tabId'], details['sourceTabId']);
+
 };
 
 TabManagerContainer.prototype.onWindowFocusChanged = function(windowId) {
@@ -435,8 +458,13 @@ TabManager.prototype.onScroll = function(replayLocatorData) {
   console.debug("[Leave] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
 };
 
-TabManager.prototype.onPageLoading = function() {
+TabManager.prototype.onPageLoading = function(tab) {
   console.debug("[Enter] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
+
+  if (tab.hasOwnProperty('pageInfo') && tab.pageInfo.hasOwnProperty('uri')) {
+    tab.pageInfo.referrer = tab.pageInfo.uri;
+  }
+
   console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
 };
 
@@ -470,23 +498,28 @@ TabManager.prototype.onPageDomContentLoaded = function() {
     tabMgr.pageInfo.extInfo = { version: 1 };
   });
 
-  this.execContentJsSync("document.referrer;", function(resp) {
-    if (tabMgr.retrieveGoogleSearchKeywords(resp['data']) === null) {
-      // Since 2011, Google enables Safe Searching, any signed in user's searching keyword no longer exposed to referrer
-      // We need to dig them out from browser history
-      var startDate = moment().subtract("hours", 4);
-      chrome.history.search({text: '', startTime:startDate.valueOf(), maxResults: 50}, function(histories) {
-        for( h in histories ) {
-          if (tabMgr.retrieveGoogleSearchKeywords(histories[h]['url']) != null) {
-            tabMgr.pageInfo.referrer = histories[h]['url'];
-            break;
+  if (tabMgr.pageInfo.referrer === undefined) {
+    var isGoogleSafeSearch = /https?:\/\/www.google.*\/.*q=&/;
+    this.execContentJsSync("document.referrer;", function(resp) {
+      if (resp['data'].match(isGoogleSafeSearch) !== null) {
+        // Since 2011, Google enables Safe Searching, any signed in user's searching keyword no longer exposed to referrer
+        // We need to dig them out from browser history
+        var startDate = moment().subtract("hours", 4);
+        chrome.history.search({text: '', startTime:startDate.valueOf(), maxResults: 50}, function(histories) {
+          for( h in histories ) {
+            if (tabMgr.retrieveGoogleSearchKeywords(histories[h]['url']) != null) {
+              tabMgr.pageInfo.referrer = histories[h]['url'];
+              break;
+            }
           }
-        }
-      });
-    } else {
-      tabMgr.pageInfo.referrer = resp['data'];
-    }
-  });
+        });
+      } else {
+        tabMgr.pageInfo.referrer = resp['data'];
+      }
+    });
+  } else {
+    console.debug("referrer: " + tabMgr.pageInfo.referrer);
+  }
 
   // [2] Check if open tab with replayLocator
   if (tabMgr.initReplayLocator) {
@@ -542,6 +575,7 @@ chrome.tabs.onRemoved.addListener(g_tabMgrContainer.onTabRemoved.bind(g_tabMgrCo
 chrome.tabs.onAttached.addListener(g_tabMgrContainer.onTabWindowAttached.bind(g_tabMgrContainer));
 chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
 chrome.tabs.onUpdated.addListener(g_tabMgrContainer.onTabUpdated.bind(g_tabMgrContainer));
+chrome.tabs.onCreatedNavigationTarget.addListener(g_tabMgrContainer.onNavChange.bind(g_tabMgrContainer));
 chrome.windows.onFocusChanged.addListener(g_tabMgrContainer.onWindowFocusChanged.bind(g_tabMgrContainer));
 chrome.windows.getAll({ populate: true }, function(windows) {
   for (var iWindow = 0, windowsCount = windows.length; iWindow < windowsCount; ++iWindow) {
