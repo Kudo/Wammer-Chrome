@@ -488,7 +488,8 @@ TabManager.prototype.onPageDomContentLoaded = function() {
   g_actMgr.sendHeartBeat(tabMgr);
 
   // [1] Initialize as new page
-  tabMgr.pageInfo = {};
+  if (tabMgr.pageInfo === undefined)
+    tabMgr.pageInfo = {};
   chrome.tabs.get(this.tabId, function(chromeTab) {
     if (!chromeTab.url.match(/^https?:\/\//)) { return; }
     tabMgr.pageInfo.uri = chromeTab.url || "";
@@ -575,7 +576,7 @@ chrome.tabs.onRemoved.addListener(g_tabMgrContainer.onTabRemoved.bind(g_tabMgrCo
 chrome.tabs.onAttached.addListener(g_tabMgrContainer.onTabWindowAttached.bind(g_tabMgrContainer));
 chrome.tabs.onActivated.addListener(g_tabMgrContainer.onTabActivated.bind(g_tabMgrContainer));
 chrome.tabs.onUpdated.addListener(g_tabMgrContainer.onTabUpdated.bind(g_tabMgrContainer));
-chrome.tabs.onCreatedNavigationTarget.addListener(g_tabMgrContainer.onNavChange.bind(g_tabMgrContainer));
+chrome.webNavigation.onCreatedNavigationTarget.addListener(g_tabMgrContainer.onNavChange.bind(g_tabMgrContainer));
 chrome.windows.onFocusChanged.addListener(g_tabMgrContainer.onWindowFocusChanged.bind(g_tabMgrContainer));
 chrome.windows.getAll({ populate: true }, function(windows) {
   for (var iWindow = 0, windowsCount = windows.length; iWindow < windowsCount; ++iWindow) {
