@@ -133,6 +133,9 @@ chrome.extension.onMessage.addListener(contentMsgDispatcher);
 
 $(document).ready(function() {
   chrome.extension.sendMessage(null, {msg: "pageOnDomContentLoaded"});
+  $(window).on("hashchange", function(e) {
+    chrome.extension.sendMessage(null, {msg: "pageOnHashChange", data: e.target.location.href});
+  });
 });
 
 $(window).load(function() {
