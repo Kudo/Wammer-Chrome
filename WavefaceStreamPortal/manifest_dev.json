@@ -9,7 +9,6 @@
     "permissions": [
         "tabs",
         "geolocation",
-        "webNavigation",
         "history",
         "http://*/*",
         "https://*/*"
