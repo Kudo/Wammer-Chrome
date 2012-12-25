@@ -134,6 +134,7 @@ function ActionManager(options) {
         // FIXME: DO NOT send data everytime here
         actMgr.isLogon = true;
         actMgr.showWarningBadge(false);
+        tabMgr.pageInfo._isFeedSent = true;
       }
     };
     xhr.send(qs);
@@ -325,7 +326,6 @@ TabManagerContainer.prototype.onTabRemoved = function(tabId) {
 
   var tabMgr = g_tabMgrContainer.getById(null, tabId);
   if (!tabMgr) { return; }
-  g_actMgr.sendHeartBeat(tabMgr);
   if (tabMgr === g_tabMgrContainer.getActiveTab()) {
     this.setActiveTab(null);
   }
@@ -390,13 +390,14 @@ TabManagerContainer.prototype.updateActiveTab = function() {
         // Due to Chrome SDK's limitation which can only capture screenshot at current selected tab.
         // If user open tabs in background, we will only be able to capture screenshot lately when user select the tab as foreground.
         // Otherwise, if user never set the tab as foreground, we don't have chance to capture the screenshot.
-        g_actMgr.captureScreenshot(currActiveTab, "head", function() {
-          g_actMgr.sendHeartBeat(currActiveTab);
-        });
+        //
+        g_actMgr.captureScreenshot(currActiveTab);
       }
 
       // [1-2] Enable monitor
-      currActiveTab.enableMonitor();
+      if (!currActiveTab.pageInfo._isFeedSent) {
+        currActiveTab.enableMonitor();
+      }
     });
   }
 
@@ -428,8 +429,10 @@ TabManager.prototype.disableMonitor = function() {
 TabManager.prototype.onHeartbeat = function() {
   console.debug("[Enter] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
   this.pageInfo.duration += 1;
-  if (this.pageInfo.duration % g_actMgr.options.cloudHeartbeatTheshold == 0) {
+  // FIXME: configuable 5 secs
+  if (this.pageInfo.duration > 5) {
     g_actMgr.sendHeartBeat(this);
+    this.disableMonitor();
   }
   console.debug("[Leave] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
 };
@@ -461,10 +464,7 @@ TabManager.prototype.onPageDomContentLoaded = function() {
 
   var tabMgr = this;
 
-  // [0] Save original page's data to cloud
-  g_actMgr.sendHeartBeat(tabMgr);
-
-  // [1] Initialize as new page
+  // [0] Initialize as new page
   if (tabMgr.pageInfo === undefined) {
     tabMgr.pageInfo = {};
   }
@@ -487,9 +487,10 @@ TabManager.prototype.onPageDomContentLoaded = function() {
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
     tabMgr.pageInfo.extInfo = { version: 1 };
+    tabMgr.pageInfo._isFeedSent = false;
   });
 
-  // [2] Check if open tab with replayLocator
+  // [1] Check if open tab with replayLocator
   if (tabMgr.initReplayLocator) {
     console.info("TabManager.onPageDomContentLoaded() - initReplayLocator[%o]", tabMgr.initReplayLocator);
     tabMgr.replayLocation(tabMgr.initReplayLocator);
@@ -514,8 +515,6 @@ TabManager.prototype.onPageLoad = function() {
       // FIXME: race condition ? if change to another tab between this two statements?
       g_actMgr.captureScreenshot(tabMgr);
     }
-
-    g_actMgr.sendHeartBeat(tabMgr);
   });
 
   console.debug("[Leave] TabManager.onPageLoad() - tabMgr.key[%s]", this.key);
@@ -528,6 +527,24 @@ TabManager.prototype.onPageHashChange = function(newUri) {
 
   this.pageInfo.prevUri = this.pageInfo.uri;
   this.pageInfo.uri = newUri;
+  this.pageInfo.startTime = new Date().toISOString();
+  this.pageInfo.duration = 0;
+  this.pageInfo.extInfo = { version: 1 };
+
+  this.pageInfo._isFeedSent = false;
+
+  var tabMgr = this;
+  chrome.tabs.get(tabMgr.tabId, function(chromeTab) {
+    tabMgr.pageInfo.title = chromeTab.title || "";
+
+    if (tabMgr === g_tabMgrContainer.getActiveTab()) {
+      delete tabMgr.pageInfo.screenshots;
+      // FIXME: race condition ? if change to another tab between this two statements?
+      g_actMgr.captureScreenshot(tabMgr);
+      tabMgr.enableMonitor();
+    }
+
+  });
 
   console.debug("[Leave] TabManager.onPageHashChange() - tabMgr.key[%s] newUri[%s]", this.key, newUri);
 };
