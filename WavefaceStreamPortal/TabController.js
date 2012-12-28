@@ -61,7 +61,8 @@ function ActionManager(options) {
   this.options = {
     screenshotFormat: (options && options.screenshotFormat) || "jpeg",
     screenshotQuality: (options && options.screenshotQuality) || 50,
-    cloudHeartbeatTheshold: (options && options.cloudHeartbeatTheshold) || __HEARTBEAT_RATE__
+    // FIXME: configuable 5 secs
+    clientHeartbeatTheshold: (options && options.clientHeartbeatTheshold) || __HEARTBEAT_RATE__
   };
 
   this.geoLocation = {};
@@ -140,6 +141,54 @@ function ActionManager(options) {
     xhr.send(qs);
 
     console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
+  };
+
+  this.sendReferrerTrack = function(tabMgr) {
+    console.debug("[Enter] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
+
+    if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
+    if (this.isBlacklistUri(tabMgr.pageInfo.uri)) { return; }
+
+    // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
+
+    var actMgr = this;
+    var uri = this.wfWebUrl + "/api";
+    uri += '?client=ChromeExt&clientVer=__VERSION__';
+    var feedData = {
+      uri: tabMgr.pageInfo.uri
+    }
+    if (tabMgr._referrerId) {
+      feedData.referrerId = tabMgr._referrerId;
+    }
+    var data = {
+      feed_data: feedData
+    };
+
+    console.log("ActionManager.sendReferrerTrack() - data[%o]", data);
+    var qs = "api=" + encodeURIComponent('/sportal/track') + "&data=" + encodeURIComponent(JSON.stringify(data));
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", uri, true);
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+      if (xhr.status != 200) {
+        console.error("ActionManager.sendReferrerTrack() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
+        actMgr.isLogon = false;
+        actMgr.showWarningBadge();
+      } else if (xhr.readyState == 4 && xhr.status == 200) {
+        // FIXME: DO NOT send data everytime here
+        actMgr.isLogon = true;
+        actMgr.showWarningBadge(false);
+        resp = JSON.parse(xhr.responseText);
+        if (resp.referrerId) {
+          tabMgr._referrerId = resp.referrerId;
+        }
+      }
+    };
+    xhr.send(qs);
+
+    console.debug("[Leave] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
   };
 
   this.captureScreenshot = function(tabMgr, capturePos, completeHandler) {
@@ -429,8 +478,7 @@ TabManager.prototype.disableMonitor = function() {
 TabManager.prototype.onHeartbeat = function() {
   console.debug("[Enter] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
   this.pageInfo.duration += 1;
-  // FIXME: configuable 5 secs
-  if (this.pageInfo.duration > 5) {
+  if (this.pageInfo.duration > g_actMgr.options.clientHeartbeatTheshold) {
     g_actMgr.sendHeartBeat(this);
     this.disableMonitor();
   }
@@ -488,6 +536,8 @@ TabManager.prototype.onPageDomContentLoaded = function() {
     tabMgr.pageInfo.duration = 0;
     tabMgr.pageInfo.extInfo = { version: 1 };
     tabMgr.pageInfo._isFeedSent = false;
+
+    g_actMgr.sendReferrerTrack(tabMgr);
   });
 
   // [1] Check if open tab with replayLocator
