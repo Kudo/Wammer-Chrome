@@ -141,6 +141,6 @@ $(document).ready(function() {
 $(window).load(function() {
   g_contentMgr._isLoaded = true;
   chrome.extension.sendMessage(null, {msg: "pageOnLoad"});
-  $(document).scroll(g_contentMgr.onScroll.bind(g_contentMgr));
+  //$(document).scroll(g_contentMgr.onScroll.bind(g_contentMgr));
 });
 
