@@ -496,17 +496,6 @@ TabManager.prototype.onPageLoading = function(tab) {
   console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
 };
 
-TabManager.prototype.retrieveGoogleSearchKeywords = function(url) {
-
-  var regex = /https?:\/\/www.google.*\/.*q=([^&]+)&/;
-  var matches = url.match(regex);
-
-  if (matches === null)
-    return null;
-  else 
-    return matches[1];
-};
-
 TabManager.prototype.onPageDomContentLoaded = function() {
   console.debug("[Enter] TabManager.onPageDomContentLoaded() - tabMgr.key[%s]", this.key);
 
