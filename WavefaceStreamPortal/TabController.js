@@ -388,9 +388,7 @@ TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeT
   var tabMgr = this.get(chromeTab);
   if (!tabMgr) { return; }
   if (changeInfo.status == "loading") {
-    var tab = this.getById(null, tabId);
-    if (tab !== undefined)
-      tabMgr.onPageLoading(tab);
+      tabMgr.onPageLoading.bind(tabMgr);
   }
   console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
 };
@@ -491,7 +489,7 @@ TabManager.prototype.onScroll = function(replayLocatorData) {
   console.debug("[Leave] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
 };
 
-TabManager.prototype.onPageLoading = function(tab) {
+TabManager.prototype.onPageLoading = function() {
   console.debug("[Enter] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
   console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
 };
