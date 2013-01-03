@@ -37,6 +37,8 @@ function extMsgDispatcher(message, sender, cbSendResp) {
     tabMgr.onPageDomContentLoaded();
   } else if (message.msg === "pageOnLoad") {
     tabMgr.onPageLoad();
+  } else if (message.msg === "pageOnHashChange") {
+    tabMgr.onPageHashChange(message.data);
   } else if (message.msg === "captureScreenshot") {
     if (tabMgr === g_tabMgrContainer.getActiveTab()) {
       // FIXME: race condition ? if change to another tab between this two statements?
@@ -59,7 +61,8 @@ function ActionManager(options) {
   this.options = {
     screenshotFormat: (options && options.screenshotFormat) || "jpeg",
     screenshotQuality: (options && options.screenshotQuality) || 50,
-    cloudHeartbeatTheshold: (options && options.cloudHeartbeatTheshold) || __HEARTBEAT_RATE__
+    // FIXME: configuable 5 secs
+    clientHeartbeatTheshold: (options && options.clientHeartbeatTheshold) || __HEARTBEAT_RATE__
   };
 
   this.geoLocation = {};
@@ -85,7 +88,7 @@ function ActionManager(options) {
       duration: tabMgr.pageInfo.duration,
       favicon: tabMgr.pageInfo.favicon,
       extInfo: tabMgr.pageInfo.extInfo,
-      referrer: tabMgr.pageInfo.referrer,
+      referrer: tabMgr.pageInfo.prevUri,
       client: {
         name: "Stream Portal Chrome Extension",
         version: "__VERSION__",
@@ -104,6 +107,7 @@ function ActionManager(options) {
 
   this.sendHeartBeat = function(tabMgr) {
     console.debug("[Enter] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
+
     if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
     if (this.isBlacklistUri(tabMgr.pageInfo.uri)) { return; }
 
@@ -131,12 +135,60 @@ function ActionManager(options) {
         // FIXME: DO NOT send data everytime here
         actMgr.isLogon = true;
         actMgr.showWarningBadge(false);
+        tabMgr.pageInfo._isFeedSent = true;
       }
     };
     xhr.send(qs);
 
-
     console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
+  };
+
+  this.sendReferrerTrack = function(tabMgr) {
+    console.debug("[Enter] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
+
+    if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
+    if (this.isBlacklistUri(tabMgr.pageInfo.uri)) { return; }
+
+    // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
+
+    var actMgr = this;
+    var uri = this.wfWebUrl + "/api";
+    uri += '?client=ChromeExt&clientVer=__VERSION__';
+    var feedData = {
+      uri: tabMgr.pageInfo.uri
+    }
+    if (tabMgr._referrerId) {
+      feedData.referrerId = tabMgr._referrerId;
+    }
+    var data = {
+      feed_data: feedData
+    };
+
+    console.log("ActionManager.sendReferrerTrack() - data[%o]", data);
+    var qs = "api=" + encodeURIComponent('/sportal/track') + "&data=" + encodeURIComponent(JSON.stringify(data));
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", uri, true);
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+      if (xhr.status != 200) {
+        console.error("ActionManager.sendReferrerTrack() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
+        actMgr.isLogon = false;
+        actMgr.showWarningBadge();
+      } else if (xhr.readyState == 4 && xhr.status == 200) {
+        // FIXME: DO NOT send data everytime here
+        actMgr.isLogon = true;
+        actMgr.showWarningBadge(false);
+        resp = JSON.parse(xhr.responseText);
+        if (resp.referrerId) {
+          tabMgr._referrerId = resp.referrerId;
+        }
+      }
+    };
+    xhr.send(qs);
+
+    console.debug("[Leave] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
   };
 
   this.captureScreenshot = function(tabMgr, capturePos, completeHandler) {
@@ -323,7 +375,6 @@ TabManagerContainer.prototype.onTabRemoved = function(tabId) {
 
   var tabMgr = g_tabMgrContainer.getById(null, tabId);
   if (!tabMgr) { return; }
-  g_actMgr.sendHeartBeat(tabMgr);
   if (tabMgr === g_tabMgrContainer.getActiveTab()) {
     this.setActiveTab(null);
   }
@@ -336,8 +387,9 @@ TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeT
   console.debug("[Enter] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
   var tabMgr = this.get(chromeTab);
   if (!tabMgr) { return; }
-  if (changeInfo.status == "loading")
-    tabMgr.onPageLoading();
+  if (changeInfo.status == "loading") {
+      tabMgr.onPageLoading.bind(tabMgr);
+  }
   console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
 };
 
@@ -381,17 +433,18 @@ TabManagerContainer.prototype.updateActiveTab = function() {
 
       // [1-1] Capture screenshot if not captured before
       if (typeof(currActiveTab.pageInfo.screenshots) === "undefined" &&
-        typeof(currActiveTab.pageInfo.uri) === "string" && currActiveTab.pageInfo.uri.match(/^https?:\/\//)) {
+          typeof(currActiveTab.pageInfo.uri) === "string" && currActiveTab.pageInfo.uri.match(/^https?:\/\//)) {
         // Due to Chrome SDK's limitation which can only capture screenshot at current selected tab.
         // If user open tabs in background, we will only be able to capture screenshot lately when user select the tab as foreground.
         // Otherwise, if user never set the tab as foreground, we don't have chance to capture the screenshot.
-        g_actMgr.captureScreenshot(currActiveTab, "head", function() {
-          g_actMgr.sendHeartBeat(currActiveTab);
-        });
+        //
+        g_actMgr.captureScreenshot(currActiveTab);
       }
 
       // [1-2] Enable monitor
-      currActiveTab.enableMonitor();
+      if (!currActiveTab.pageInfo._isFeedSent) {
+        currActiveTab.enableMonitor();
+      }
     });
   }
 
@@ -423,8 +476,9 @@ TabManager.prototype.disableMonitor = function() {
 TabManager.prototype.onHeartbeat = function() {
   console.debug("[Enter] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
   this.pageInfo.duration += 1;
-  if (this.pageInfo.duration % g_actMgr.options.cloudHeartbeatTheshold == 0) {
+  if (this.pageInfo.duration > g_actMgr.options.clientHeartbeatTheshold) {
     g_actMgr.sendHeartBeat(this);
+    this.disableMonitor();
   }
   console.debug("[Leave] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
 };
@@ -440,57 +494,40 @@ TabManager.prototype.onPageLoading = function() {
   console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
 };
 
-TabManager.prototype.retrieveGoogleSearchKeywords = function(url) {
-
-  var regex = /https?:\/\/www.google.*\/.*&q=([^&]+)&?/;
-  var matches = url.match(regex);
-
-  if (matches === null)
-    return null;
-  else {
-    console.debug("keywords: " + matches[1]);
-    return matches[1];
-  }
-};
-
 TabManager.prototype.onPageDomContentLoaded = function() {
   console.debug("[Enter] TabManager.onPageDomContentLoaded() - tabMgr.key[%s]", this.key);
 
   var tabMgr = this;
 
-  // [0] Save original page's data to cloud
-  g_actMgr.sendHeartBeat(tabMgr);
+  // [0] Initialize as new page
+  if (tabMgr.pageInfo === undefined) {
+    tabMgr.pageInfo = {};
+  }
 
-  // [1] Initialize as new page
-  tabMgr.pageInfo = {};
   chrome.tabs.get(this.tabId, function(chromeTab) {
     if (!chromeTab.url.match(/^https?:\/\//)) { return; }
+
+    tabMgr.pageInfo.prevUri = "";
+    if (tabMgr.pageInfo.uri) {
+        tabMgr.pageInfo.prevUri = tabMgr.pageInfo.uri;
+    } else if (chromeTab.openerTabId !== "undefined") {
+        chrome.tabs.get(chromeTab.openerTabId, function(openerChromeTab) {
+          if (!openerChromeTab.url.match(/^https?:\/\//)) { return; }
+          tabMgr.pageInfo.prevUri = openerChromeTab.url || "";
+        });
+    }
+
     tabMgr.pageInfo.uri = chromeTab.url || "";
     tabMgr.pageInfo.title = chromeTab.title || "";
     tabMgr.pageInfo.startTime = new Date().toISOString();
     tabMgr.pageInfo.duration = 0;
     tabMgr.pageInfo.extInfo = { version: 1 };
+    tabMgr.pageInfo._isFeedSent = false;
+
+    g_actMgr.sendReferrerTrack(tabMgr);
   });
 
-  this.execContentJsSync("document.referrer;", function(resp) {
-    if (tabMgr.retrieveGoogleSearchKeywords(resp['data']) === null) {
-      // Since 2011, Google enables Safe Searching, any signed in user's searching keyword no longer exposed to referrer
-      // We need to dig them out from browser history
-      var startDate = moment().subtract("hours", 4);
-      chrome.history.search({text: 'google.com', startTime:startDate.valueOf(), maxResults: 20}, function(histories) {
-        for( h in histories ) {
-          if (tabMgr.retrieveGoogleSearchKeywords(histories[h]['url']) != null) {
-            tabMgr.pageInfo.referrer = histories[h]['url'];
-            break;
-          }
-        }
-      });
-    } else {
-      tabMgr.pageInfo.referrer = resp['data'];
-    }
-  });
-
-  // [2] Check if open tab with replayLocator
+  // [1] Check if open tab with replayLocator
   if (tabMgr.initReplayLocator) {
     console.info("TabManager.onPageDomContentLoaded() - initReplayLocator[%o]", tabMgr.initReplayLocator);
     tabMgr.replayLocation(tabMgr.initReplayLocator);
@@ -506,6 +543,7 @@ TabManager.prototype.onPageLoad = function() {
   var tabMgr = this;
   chrome.tabs.get(tabMgr.tabId, function(chromeTab) {
     if (!chromeTab.url.match(/^https?:\/\//)) { return; }
+
     tabMgr.pageInfo.favicon = chromeTab.favIconUrl || undefined;
 
     if (tabMgr === g_tabMgrContainer.getActiveTab()) {
@@ -514,11 +552,38 @@ TabManager.prototype.onPageLoad = function() {
       // FIXME: race condition ? if change to another tab between this two statements?
       g_actMgr.captureScreenshot(tabMgr);
     }
-
-    g_actMgr.sendHeartBeat(tabMgr);
   });
 
   console.debug("[Leave] TabManager.onPageLoad() - tabMgr.key[%s]", this.key);
+};
+
+TabManager.prototype.onPageHashChange = function(newUri) {
+  console.debug("[Enter] TabManager.onPageHashChange() - tabMgr.key[%s] newUri[%s]", this.key, newUri);
+
+  if (!newUri.match(/^https?:\/\//)) { return; }
+
+  this.pageInfo.prevUri = this.pageInfo.uri;
+  this.pageInfo.uri = newUri;
+  this.pageInfo.startTime = new Date().toISOString();
+  this.pageInfo.duration = 0;
+  this.pageInfo.extInfo = { version: 1 };
+
+  this.pageInfo._isFeedSent = false;
+
+  var tabMgr = this;
+  chrome.tabs.get(tabMgr.tabId, function(chromeTab) {
+    tabMgr.pageInfo.title = chromeTab.title || "";
+
+    if (tabMgr === g_tabMgrContainer.getActiveTab()) {
+      delete tabMgr.pageInfo.screenshots;
+      // FIXME: race condition ? if change to another tab between this two statements?
+      g_actMgr.captureScreenshot(tabMgr);
+      tabMgr.enableMonitor();
+    }
+
+  });
+
+  console.debug("[Leave] TabManager.onPageHashChange() - tabMgr.key[%s] newUri[%s]", this.key, newUri);
 };
 
 TabManager.prototype.execContentJsSync = function(request, respHandler) {
@@ -534,6 +599,7 @@ TabManager.prototype.replayLocation = function(replayLocatorData) {
   var message = { msg: "replayLocation", replayLocatorData: replayLocatorData};
   chrome.tabs.sendMessage(this.tabId, message);
 };
+
 
 chrome.extension.onMessage.addListener(extMsgDispatcher);
 chrome.browserAction.onClicked.addListener(g_actMgr.onClickBrowserAction.bind(g_actMgr));

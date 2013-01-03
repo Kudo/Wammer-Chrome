@@ -4,14 +4,14 @@
     "default_locale": "en",
     "manifest_version": 2,
     "background": {
-	"scripts": ["TabController.js", "moment.js", "HistoryExporter.js"]
+        "scripts": ["TabController.js", "moment.js", "HistoryExporter.js"]
     },
     "permissions": [
-	"tabs",
-	"geolocation",
-	"history",
-	"http://*/*",
-	"https://*/*"
+        "tabs",
+        "geolocation",
+        "history",
+        "http://*/*",
+        "https://*/*"
     ],
     "description": "__MSG_extDesc__",
     "icons": {
@@ -24,24 +24,24 @@
         "default_icon": "StreamPortal_19.png"
     },
     "content_scripts": [
-	{
-	    "matches": ["http://*/*", "https://*/*"],
-	    "js": ["jquery.js", "ContentManager.js"],
-	    "css": ["ReplayDialog.css"],
-	    "run_at": "document_start"
-	},
-	{
-	    "matches": ["__WFLINK__/portal/"],
-	    "js": ["bootstrap/js/bootstrap.min.js", "WebViewerHandler.js"],
-	    "css": ["bootstrap/css/bootstrap.min.css"]
-	},
-	{
-	    "matches": ["__WFLINK__/timeline"],
-	    "js": ["TimelineHandler.js"]
-	}
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "js": ["jquery.js", "ContentManager.js"],
+            "css": ["ReplayDialog.css"],
+            "run_at": "document_start"
+        },
+        {
+            "matches": ["__WFLINK__/portal/"],
+            "js": ["bootstrap/js/bootstrap.min.js", "WebViewerHandler.js"],
+            "css": ["bootstrap/css/bootstrap.min.css"]
+        },
+        {
+            "matches": ["__WFLINK__/timeline"],
+            "js": ["TimelineHandler.js"]
+        }
     ],
     "web_accessible_resources": [
-	"bootstrap/img/glyphicons-halflings.png",
-	"bootstrap/img/glyphicons-halflings-white.png"
+        "bootstrap/img/glyphicons-halflings.png",
+        "bootstrap/img/glyphicons-halflings-white.png"
     ]
 }
