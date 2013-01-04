@@ -67,9 +67,10 @@ function build_crx {
 rm -rf output
 
 mkdir -p output
-build_crx 'support.Portal@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' '' '' '30'
+build_crx 'support.Portal@waveface.com' 'http:\/\/staging.waveface.com' $version 'staging' '' '' '5'
 build_crx 'develop.Portal@waveface.com' 'https:\/\/devweb.waveface.com' $version 'develop' 'Dev' '' '5'
-build_crx 'support.Portal@waveface.com' 'https:\/\/waveface.com' $version 'production' '' 'min' '30'
+#build_crx 'develop.Portal@waveface.com' 'http:\/\/localhost:9090' $version 'local' 'Dev' '' '5'
+build_crx 'support.Portal@waveface.com' 'https:\/\/waveface.com' $version 'production' '' 'min' '5'
 
 cp -f updates.xml output/
 cp -f updates_dev.xml output/
