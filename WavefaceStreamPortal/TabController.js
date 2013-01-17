@@ -115,7 +115,7 @@ function ActionManager(options) {
 
     var actMgr = this;
     var uri = this.wfWebUrl + "/api";
-    uri += '?client=ChromeExt&clientVer=__VERSION__';
+    uri += '?v=3&client=ChromeExt&clientVer=__VERSION__';
     var data = {
       feed_data: g_actMgr.composeFeedData(tabMgr)
     };
