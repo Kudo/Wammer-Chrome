@@ -1,0 +1,76 @@
+$base-font-size: 15px;
+$base-line-height:18px;
+
+@import "compass/css3/box-sizing";
+@import "compass/utilities/general/clearfix";
+@import "compass/css3/transition";
+@import "button";
+@import "form";
+
+#login {
+    width: 300px;
+    height: 300px;
+
+    .facebook-login {
+        position: relative;
+        margin-top: 10px;
+
+        .submit {
+            text-align: center;
+        }
+
+        .input {
+            max-width: 240px;
+            display: block;
+            margin: 5px auto;
+            text-align: left;
+        }
+
+        .en & .input {
+            max-width: 300px;
+        }
+
+        button.fb-button, a.fb-button {
+            position: relative;
+            padding-left: 30px;
+            img {
+                font-size: 24px;
+                position: absolute;
+                top:5px;
+                left:5px;
+            }
+        }
+
+        .fb-button {
+            width: 100%;
+            text-align: center;
+            @include box-sizing(border-box);
+        }
+    }
+
+    .gray-box {
+        background-color: #fcfcfc;
+        border: 1px solid #eee;
+        padding: 10px 20px;
+    }
+
+    .or {
+        text-align: center;
+        padding: 5px;
+        color: #ccc;
+    }
+
+    input[type="submit"], input[type="text"], input[type="password"], input[type="email"] {
+        @include box-sizing(border-box);
+    }
+
+    .h-form {
+        margin-bottom: 0;
+    }
+}
+
+#page {
+    margin: 20px;
+}
+
+

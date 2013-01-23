@@ -4,7 +4,13 @@
     "default_locale": "en",
     "manifest_version": 2,
     "background": {
-        "scripts": ["TabController.js", "moment.js", "HistoryExporter.js"]
+        "scripts": [
+          "lib/jquery.js",
+          "lib/wfAuth.js",
+          "lib/moment.js",
+          "TabController.js",
+          "HistoryExporter.js"
+        ]
     },
     "permissions": [
         "tabs",
@@ -26,7 +32,7 @@
     "content_scripts": [
         {
             "matches": ["http://*/*", "https://*/*"],
-            "js": ["jquery.js", "ContentManager.js"],
+            "js": ["lib/jquery.js", "ContentManager.js"],
             "css": ["ReplayDialog.css"],
             "run_at": "document_start"
         },

@@ -1,0 +1,193 @@
+/* Forms.scss
+ * Base styles for various input types, form layouts, and states
+ * ------------------------------------------------------------- */
+
+
+// FORM STYLES
+// -----------
+
+$label-width: 120px;
+$input-width: 300px;
+$input-background: #E3E0DC;
+$input-border: 1px solid darken($input-background, 20%);
+
+@mixin form-layout($type: default) {
+	margin-bottom: $base-line-height;
+	
+	p, li, .field {
+	  margin-top: $base-line-height;
+	  margin-bottom: $base-line-height/2;
+	  display: block;
+		@include pie-clearfix;
+	}
+	
+	label {
+		font-weight: bold;
+	  	line-height: $base-line-height;
+		display: block;
+		
+		@if $type != stack
+		{
+			float: left;
+			text-align: right;
+			width: $label-width;
+			padding: 8px 0;
+		}
+		@else
+		{
+			margin: 10px 0 0 0;
+		}
+	}
+	input[type=text],
+	input[type=email],
+	input[type=password],
+	textarea,
+	.input {
+		line-height: $base-line-height;
+		display: block;
+		width: $input-width;
+
+		@if $type != stack
+		{
+			float: left;
+			margin-left: 10px;
+		}
+		@else if $type == stack
+		{
+		}
+	}
+	
+	.input {
+	  padding: 4px 0;
+	  width: $input-width;
+	}
+	
+	.input-help {
+		@if $type != stack
+		{
+			margin: $base-line-height/2 0 $base-line-height/2 $label-width + 10px;
+		}
+		@else if $type == stack
+		{
+			margin: 0;
+		}
+	}
+	
+	.input-list {
+		margin-top: 0;
+		margin-bottom: 0;
+		li {
+			margin: 0 ;
+		}
+	}
+	.submit {
+		text-align: right;
+
+		@if $type != stack
+		{
+			width: $label-width + $input-width + 20px;
+		}
+		@else if $type == stack
+		{
+			width: $input-width;
+		}
+	}
+}
+
+@mixin form-style(){
+	
+
+	.input-help {
+		font-size: 13px;
+		color: #999;
+	}
+	input[type=text],
+	input[type=email],
+	input[type=password],
+	textarea,
+ 	{
+		font-size: 15px;
+		padding: 3px 3px;
+		line-height: 1.5;
+		border: $input-border;
+		background-color : $input-background;
+		color: darken($input-background, 55%);
+		@include box-shadow(1px 1px 2px darken($input-background, 10%) inset);
+
+	}
+	.input-error {
+		.input-help, label {
+			color: #900;
+		}
+	}
+
+
+	select,
+	input[type=file] {
+	  height: $base-line-height * 1.5;
+	  line-height: $base-line-height * 1.5;
+	}
+	textarea {
+	  height: auto;
+	}
+	input[readonly]:focus,
+	textarea[readonly]:focus,
+	input.disabled {
+	  background: #f5f5f5;
+	  border-color: #ddd;
+	  @include box-shadow(none);
+	}
+	
+}
+
+
+
+// Groups of fields with labels on top (legends)
+
+@mixin legend-style {
+
+fieldset {
+  margin-bottom: $base-line-height;
+  padding-top: $base-line-height;
+  legend {
+	display: block;
+	font-size: 20px;
+	line-height: 1;
+	*margin: 0 0 5px 145px; /* IE6-7 */
+	*line-height: 1.5; /* IE6-7 */
+  }
+}
+	
+}
+
+
+// Inputs, Textareas, Selects
+
+// Focus states
+
+@mixin focus-states {
+	
+	input[type=text],
+	input[type=password],
+	select, textarea {
+	  @include transition(border linear .2s, box-shadow linear .2s, background linear .2s);
+	  @include box-shadow(inset 0 1px 3px rgba(0,0,0,.1));
+	}
+	input[type=text]:focus,
+	input[type=email]:focus,
+	input[type=url]:focus,
+	input[type=password]:focus,
+	textarea:focus {
+	  outline: none;
+	  border-color: #7F613A;
+	  background-color: lighten($input-background, 3%);
+	  @include box-shadow(
+		inset 0 1px 3px rgba(0,0,0,.1));
+	}
+	
+	
+}
+
+
+// Turn off focus for disabled (read-only) form elements
+

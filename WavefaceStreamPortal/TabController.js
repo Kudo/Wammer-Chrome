@@ -129,11 +129,9 @@ function ActionManager(options) {
     xhr.onreadystatechange = function() {
       if (xhr.status != 200) {
         console.error("ActionManager.sendHeartBeat() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
-        actMgr.isLogon = false;
         actMgr.showWarningBadge();
       } else if (xhr.status == 200) {
         // FIXME: DO NOT send data everytime here
-        actMgr.isLogon = true;
         actMgr.showWarningBadge(false);
         tabMgr.pageInfo._isFeedSent = true;
       }
@@ -174,11 +172,9 @@ function ActionManager(options) {
     xhr.onreadystatechange = function() {
       if (xhr.status != 200) {
         console.error("ActionManager.sendReferrerTrack() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
-        actMgr.isLogon = false;
         actMgr.showWarningBadge();
       } else if (xhr.readyState == 4 && xhr.status == 200) {
         // FIXME: DO NOT send data everytime here
-        actMgr.isLogon = true;
         actMgr.showWarningBadge(false);
         resp = JSON.parse(xhr.responseText);
         if (resp.referrerId) {
@@ -229,32 +225,20 @@ function ActionManager(options) {
   };
 
   this.checkLogon = function() {
-    var uri = this.wfWebUrl + "/api";
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", uri, false);
-    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-    try {
-      xhr.send(null);
-    } catch(e) {
-      console.error("ActionManager.checkLogon() - xhr.send() exception. e[%o]", e);
-      this.showWarningBadge();
-      return false;
+    if (localStorage.sessionToken) {
+      if (WfIsSessionTokenValid(localStorage.sessionToken)) {
+        this.showWarningBadge(false);
+        chrome.browserAction.setPopup({popup: ""});
+        return true;
+      } else {
+        delete localStorage.sessionToken;
+      }
     }
-
-    if (xhr.status == 401) {
-      console.warn("ActionManager.checkLogon() - server return 401.");
-      this.showWarningBadge();
-      return false;
-    } else if (xhr.status == 200) {
-      this.isLogon = true;
-      this.showWarningBadge(false);
-      return true;
-    } else {
-      console.error("ActionManager.checkLogon() - WEB api return invalid status. xhr.status[%d]", xhr.status);
-      this.showWarningBadge();
-      return false;
-    }
+    this.showWarningBadge();
+    chrome.browserAction.setPopup({popup: "ui/login.html"});
+    return false;
   };
+
 
   this.showWarningBadge = function(isWarning) {
     isWarning = typeof(isWarning) !== "undefined" ? isWarning : true;

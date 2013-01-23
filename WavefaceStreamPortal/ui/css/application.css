@@ -1,0 +1,427 @@
+.main-button {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid #3a7383;
+  text-decoration: none !important;
+  text-shadow: 0 -1px 1px #3a7383;
+  font-size: 13px;
+  font-weight: bold;
+  color: white !important;
+  background-color: #67a9bc;
+  background-image: linear-gradient(top, #67a9bc, #4992a7);
+  cursor: pointer;
+  -webkit-appearance: none;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -12px 12px rgba(50, 99, 113, 0.3) inset, 0 1px 2px rgba(50, 99, 113, 0.5);
+  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -12px 12px rgba(50, 99, 113, 0.3) inset, 0 1px 2px rgba(50, 99, 113, 0.5);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -12px 12px rgba(50, 99, 113, 0.3) inset, 0 1px 2px rgba(50, 99, 113, 0.5);
+}
+.main-button:hover {
+  background: #4992a7;
+}
+.main-button:active {
+  background: #4992a7;
+  position: relative;
+  top: 1px;
+  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 -12px 12px rgba(50, 99, 113, 0.5) inset;
+  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 -12px 12px rgba(50, 99, 113, 0.5) inset;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 -12px 12px rgba(50, 99, 113, 0.5) inset;
+}
+.main-button[disabled] {
+  background: #6babbe !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  color: white !important;
+}
+
+.fb-button {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid #40516d;
+  text-decoration: none !important;
+  text-shadow: 0 -1px 1px #40516d;
+  font-size: 13px;
+  font-weight: bold;
+  color: white !important;
+  background-color: #6b82a8;
+  background-image: linear-gradient(top, #6b82a8, #53698d);
+  cursor: pointer;
+  -webkit-appearance: none;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -12px 12px rgba(55, 69, 93, 0.3) inset, 0 1px 2px rgba(55, 69, 93, 0.5);
+  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -12px 12px rgba(55, 69, 93, 0.3) inset, 0 1px 2px rgba(55, 69, 93, 0.5);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 -12px 12px rgba(55, 69, 93, 0.3) inset, 0 1px 2px rgba(55, 69, 93, 0.5);
+}
+.fb-button:hover {
+  background: #53698d;
+}
+.fb-button:active {
+  background: #53698d;
+  position: relative;
+  top: 1px;
+  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 -12px 12px rgba(55, 69, 93, 0.5) inset;
+  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 -12px 12px rgba(55, 69, 93, 0.5) inset;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 -12px 12px rgba(55, 69, 93, 0.5) inset;
+}
+.fb-button[disabled] {
+  background: #6e85aa !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  color: white !important;
+}
+
+/* Forms.scss
+ * Base styles for various input types, form layouts, and states
+ * ------------------------------------------------------------- */
+.v-form {
+  margin-bottom: 18px;
+}
+.v-form p, .v-form li, .v-form .field {
+  margin-top: 18px;
+  margin-bottom: 9px;
+  display: block;
+  *zoom: 1;
+}
+.v-form p:after, .v-form li:after, .v-form .field:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.v-form label {
+  font-weight: bold;
+  line-height: 18px;
+  display: block;
+  float: left;
+  text-align: right;
+  width: 240px;
+  padding: 8px 0;
+}
+.v-form input[type=text],
+.v-form input[type=email],
+.v-form input[type=password],
+.v-form textarea,
+.v-form .input {
+  line-height: 18px;
+  display: block;
+  width: 300px;
+  float: left;
+  margin-left: 10px;
+}
+.v-form .input {
+  padding: 4px 0;
+  width: 300px;
+}
+.v-form .input-help {
+  margin: 9px 0 9px 250px;
+}
+.v-form .input-list {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.v-form .input-list li {
+  margin: 0;
+}
+.v-form .submit {
+  text-align: right;
+  width: 560px;
+}
+.v-form .input-help {
+  font-size: 13px;
+  color: #999;
+}
+.v-form input[type=text],
+.v-form input[type=email],
+.v-form input[type=password],
+.v-form textarea {
+  font-size: 15px;
+  padding: 3px 3px;
+  line-height: 1.5;
+  border: 1px solid #b6aea3;
+  background-color: #e3e0dc;
+  color: #5c554a;
+  -webkit-box-shadow: 1px 1px 2px #ccc7c0 inset;
+  -moz-box-shadow: 1px 1px 2px #ccc7c0 inset;
+  box-shadow: 1px 1px 2px #ccc7c0 inset;
+}
+.v-form .input-error .input-help, .v-form .input-error label {
+  color: #900;
+}
+.v-form select,
+.v-form input[type=file] {
+  height: 27px;
+  line-height: 27px;
+}
+.v-form textarea {
+  height: auto;
+}
+.v-form input[readonly]:focus,
+.v-form textarea[readonly]:focus,
+.v-form input.disabled {
+  background: #f5f5f5;
+  border-color: #ddd;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+.v-form input[type=text],
+.v-form input[type=password],
+.v-form select, .v-form textarea {
+  -webkit-transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  -moz-transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  -ms-transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  -o-transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.v-form input[type=text]:focus,
+.v-form input[type=email]:focus,
+.v-form input[type=url]:focus,
+.v-form input[type=password]:focus,
+.v-form textarea:focus {
+  outline: none;
+  border-color: #7F613A;
+  background-color: #eae8e5;
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.v-form .forget-pw {
+  margin-top: -25px;
+}
+.v-form .errorlist {
+  font-size: 13px;
+  color: #900;
+  margin: -5px 0 0 250px;
+}
+.v-form .errorlist li {
+  margin: 0 0 10px;
+}
+.v-form .errorlist label {
+  font-size: 13px;
+  font-weight: normal;
+  color: #900;
+  padding: 0;
+  text-align: left;
+}
+
+.h-form {
+  margin-bottom: 18px;
+}
+.h-form p, .h-form li, .h-form .field {
+  margin-top: 18px;
+  margin-bottom: 9px;
+  display: block;
+  *zoom: 1;
+}
+.h-form p:after, .h-form li:after, .h-form .field:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.h-form label {
+  font-weight: bold;
+  line-height: 18px;
+  display: block;
+  margin: 10px 0 0 0;
+}
+.h-form input[type=text],
+.h-form input[type=email],
+.h-form input[type=password],
+.h-form textarea,
+.h-form .input {
+  line-height: 18px;
+  display: block;
+  width: 100%;
+}
+.h-form .input {
+  padding: 4px 0;
+  width: 100%;
+}
+.h-form .input-help {
+  margin: 0;
+}
+.h-form .input-list {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.h-form .input-list li {
+  margin: 0;
+}
+.h-form .submit {
+  text-align: right;
+  width: 100%;
+}
+.h-form .input-help {
+  font-size: 13px;
+  color: #999;
+}
+.h-form input[type=text],
+.h-form input[type=email],
+.h-form input[type=password],
+.h-form textarea {
+  font-size: 15px;
+  padding: 3px 3px;
+  line-height: 1.5;
+  border: 1px solid #b6aea3;
+  background-color: #e3e0dc;
+  color: #5c554a;
+  -webkit-box-shadow: 1px 1px 2px #ccc7c0 inset;
+  -moz-box-shadow: 1px 1px 2px #ccc7c0 inset;
+  box-shadow: 1px 1px 2px #ccc7c0 inset;
+}
+.h-form .input-error .input-help, .h-form .input-error label {
+  color: #900;
+}
+.h-form select,
+.h-form input[type=file] {
+  height: 27px;
+  line-height: 27px;
+}
+.h-form textarea {
+  height: auto;
+}
+.h-form input[readonly]:focus,
+.h-form textarea[readonly]:focus,
+.h-form input.disabled {
+  background: #f5f5f5;
+  border-color: #ddd;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+.h-form input[type=text],
+.h-form input[type=password],
+.h-form select, .h-form textarea {
+  -webkit-transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  -moz-transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  -ms-transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  -o-transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  transition: border linear 0.2s, box-shadow linear 0.2s, background linear 0.2s;
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.h-form input[type=text]:focus,
+.h-form input[type=email]:focus,
+.h-form input[type=url]:focus,
+.h-form input[type=password]:focus,
+.h-form textarea:focus {
+  outline: none;
+  border-color: #7F613A;
+  background-color: #eae8e5;
+  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.h-form .forget-pw {
+  text-align: center;
+}
+.h-form .errorlist {
+  font-size: 13px;
+  color: #900;
+  margin: 0;
+}
+.h-form .errorlist li {
+  margin: 0 0 10px;
+}
+.h-form .errorlist label {
+  font-size: 13px;
+  font-weight: normal;
+  color: #900;
+  padding: 0;
+  text-align: left;
+}
+
+.error {
+  color: #900;
+}
+.error input[type="text"], .error input[type="password"], .error input[type="email"] {
+  border-color: #900;
+}
+
+.section-line {
+  border-top: 1px dotted #cccccc;
+  text-align: center;
+  margin: 30px -20px 10px;
+}
+.section-line b {
+  color: #999;
+  background-color: #fff;
+  padding: 4px;
+  position: relative;
+  top: -10px;
+}
+
+.checkbox-click {
+  cursor: pointer;
+}
+
+#login {
+  width: 300px;
+  height: 300px;
+}
+#login .facebook-login {
+  position: relative;
+  margin-top: 10px;
+}
+#login .facebook-login .submit {
+  text-align: center;
+}
+#login .facebook-login .input {
+  max-width: 240px;
+  display: block;
+  margin: 5px auto;
+  text-align: left;
+}
+.en #login .facebook-login .input {
+  max-width: 300px;
+}
+#login .facebook-login button.fb-button, #login .facebook-login a.fb-button {
+  position: relative;
+  padding-left: 30px;
+}
+#login .facebook-login button.fb-button img, #login .facebook-login a.fb-button img {
+  font-size: 24px;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+#login .facebook-login .fb-button {
+  width: 100%;
+  text-align: center;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#login .gray-box {
+  background-color: #fcfcfc;
+  border: 1px solid #eeeeee;
+  padding: 10px 20px;
+}
+#login .or {
+  text-align: center;
+  padding: 5px;
+  color: #ccc;
+}
+#login input[type="submit"], #login input[type="text"], #login input[type="password"], #login input[type="email"] {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#login .h-form {
+  margin-bottom: 0;
+}
+
+#page {
+  margin: 20px;
+}
