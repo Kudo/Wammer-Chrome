@@ -2,7 +2,7 @@ function WfLogin(email, password, cbComplete) {
   console.debug("[Enter] WfLogin() - email[%s]", email);
 
   var _cbSuccess = function(obj) {
-    localStorage.sessionToken = obj.session_token
+    localStorage.sessionToken = obj.session_token;
     chrome.browserAction.setBadgeText({text: ""});
     chrome.browserAction.setPopup({popup: ""});
     if (typeof(cbComplete) === "function") { cbComplete(true); }
@@ -49,13 +49,13 @@ function WfFbLogin(cbComplete) {
 
 WfFbLogin.callback = function(obj) {
   console.debug("[Enter] WfFbLogin.callback() - obj[%o]", obj);
-  if (obj.api_ret_code == 0 && obj.session_token) {
+  if (obj.api_ret_code === 0 && obj.session_token) {
     localStorage.sessionToken = obj.session_token;
     chrome.browserAction.setBadgeText({text: ""});
     chrome.browserAction.setPopup({popup: ""});
   }
   console.debug("[Leave] WfFbLogin.callback() - obj[%o]", obj);
-}
+};
 
 function WfIsSessionTokenValid(sessionToken) {
   console.debug("[Enter] WfIsSessionTokenValid()");

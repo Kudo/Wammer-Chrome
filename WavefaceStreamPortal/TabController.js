@@ -10,7 +10,7 @@ function installNotice(downloadUrl) {
     }
     localStorage.version = details.version;
   }
-};
+}
 installNotice(g_WfSettings.webUrl + "/StreamPortal/welcome?client=ChromeExt&clientVer=" + g_WfSettings.version);
 
 var g_actMgr = new ActionManager();
@@ -18,7 +18,7 @@ var g_tabMgrContainer = new TabManagerContainer();
 
 function extMsgDispatcher(message, sender, cbSendResp) {
   var tabMgr = g_tabMgrContainer.getById(sender.tab.windowId, sender.tab.id);
-  if (!tabMgr) { return; }
+  if (!tabMgr) { return false; }
 
   if (message.msg === "heartbeat") {
     tabMgr.onHeartbeat();
@@ -53,7 +53,7 @@ function extMsgDispatcher(message, sender, cbSendResp) {
   }
 
   return false;
-};
+}
 
 function ActionManager(options) {
   this.options = {
@@ -99,7 +99,7 @@ function ActionManager(options) {
       tabMgr.pageInfo.screenshots = null;   // Set as null to prevent sending screenshot many times.
     }
 
-    return feedData
+    return feedData;
   };
 
   this.sendHeartBeat = function(tabMgr) {
@@ -151,7 +151,7 @@ function ActionManager(options) {
     uri += '?client=ChromeExt&clientVer=' + g_WfSettings.version;
     var feedData = {
       uri: tabMgr.pageInfo.uri
-    }
+    };
     if (tabMgr._referrerId) {
       feedData.referrerId = tabMgr._referrerId;
     }
@@ -263,15 +263,15 @@ function ActionManager(options) {
     }
     return false;
   };
-};
+}
 
 function mapTabIdToKey(windowId, tabId) {
   return tabId;
-};
+}
 
 function mapChromeTabToKey(chromeTab) {
   return mapTabIdToKey(chromeTab.windowId, chromeTab.id);
-};
+}
 
 function TabManagerContainer() {
   this._tabContainer = {};
@@ -281,7 +281,7 @@ function TabManagerContainer() {
   chrome.windows.getCurrent(null, function(chromeWindow) {
     tabMgrContainer._focusedWindowId = chromeWindow.id;
   });
-};
+}
 
 TabManagerContainer.prototype.add = function(tabMgr) {
   this._tabContainer[tabMgr.key] = tabMgr;
@@ -432,7 +432,7 @@ function TabManager(chromeTab) {
   this.tabId = chromeTab.id;
   this.key = mapChromeTabToKey(chromeTab);
   this.pageInfo = {};
-};
+}
 
 TabManager.prototype.enableMonitor = function() {
   console.debug("[Enter] TabManager.enableMonitor() - tabMgr.key[%s]", this.key);

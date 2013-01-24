@@ -11,7 +11,7 @@ function HistoryExporter() {
   //this.oldestDate = moment(new Date('2012/01/01'));
   this.oldestDate = moment().subtract('days', 14).startOf('day');
   this.histItemsToCloudTheshold = 500;
-};
+}
 
 HistoryExporter.prototype.composeFeedData = function(histItem) {
   var feedData = {
@@ -26,7 +26,7 @@ HistoryExporter.prototype.composeFeedData = function(histItem) {
       version: g_WfSettings.version
     }
   };
-  return feedData
+  return feedData;
 };
 
 HistoryExporter.prototype.sendFeedData = function() {
@@ -82,7 +82,7 @@ HistoryExporter.prototype.exportAll = function(portalTabId) {
         if (portalTabId) {
           chrome.tabs.executeScript(portalTabId, {code: "updateHistDialogProgress(" + _progress + ")"});
         }
-      }
+      };
     };
     this.exportFromDateRange(startDate, endDate, portalTabId, fComplete(progress));
   }

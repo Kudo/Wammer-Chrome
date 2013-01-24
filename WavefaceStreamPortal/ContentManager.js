@@ -1,6 +1,6 @@
 /*
 function ReplayLocator() {
-};
+}
 
 ReplayLocator.ruleGen_posPercentage = function() {
   // There was an issue in jQuery 1.8, https://github.com/jquery/jquery/pull/764
@@ -10,7 +10,7 @@ ReplayLocator.ruleGen_posPercentage = function() {
 
   var scrollTop = $(window).scrollTop();
   var documentHeight = $(document).height();
-  return { rule: "posPercentage", value: Math.floor(scrollTop  * 100 / (documentHeight - windowHeight)) }
+  return { rule: "posPercentage", value: Math.floor(scrollTop  * 100 / (documentHeight - windowHeight)) };
 };
 
 ReplayLocator.ruleReplay_posPercentage = function(value) {
@@ -82,19 +82,20 @@ function ContentManager() {
       chrome.extension.sendMessage(null, {msg: "scroll", data: ReplayLocator.generateRules() });
   };
   */
-};
+}
 
 g_contentMgr = new ContentManager();
 
 function contentMsgDispatcher(message, sender, cbSendResp) {
+  var retData;
   if (message.msg === "execJs") {
-    var retData = eval(message.request);
+    retData = eval(message.request);
     if (message.syncCall) {
       cbSendResp({data: retData});
       return true;
     }
   } else if (message.msg === "execContentMgrHandler") {
-    var retData = g_contentMgr[message.request]();
+    retData = g_contentMgr[message.request]();
     if (message.syncCall) {
       cbSendResp({data: retData});
       return true;
@@ -129,7 +130,8 @@ function contentMsgDispatcher(message, sender, cbSendResp) {
     //ReplayLocator.replayWithRules(message.replayLocatorData);
   }
   */
-};
+ return false;
+}
 
 chrome.extension.onMessage.addListener(contentMsgDispatcher);
 

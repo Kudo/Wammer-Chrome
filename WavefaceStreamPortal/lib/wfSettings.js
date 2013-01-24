@@ -7,7 +7,7 @@ function WfSettings() {
 
   /* Web server settings */
   this.webUrl = "__WF_WEB_URL__";
-  this.fbLoginUrl = this.webUrl + "/client/v3/sns/facebook/signin"
+  this.fbLoginUrl = this.webUrl + "/client/v3/sns/facebook/signin";
 
   /* Extension settings */
   this.version = "__VERSION__";
