@@ -208,7 +208,7 @@ function ActionManager(options) {
     if (localStorage.sessionToken) {
       if (WfIsSessionTokenValid(localStorage.sessionToken)) {
         this.showWarningBadge(false);
-        chrome.browserAction.setPopup({popup: ""});
+        chrome.browserAction.setPopup({popup: "ui/profile.html"});
         return true;
       } else {
         delete localStorage.sessionToken;

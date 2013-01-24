@@ -3,8 +3,11 @@ function WfLogin(email, password, cbComplete) {
 
   var _cbSuccess = function(obj) {
     localStorage.sessionToken = obj.session_token;
+    if (obj.user.email) {
+      localStorage.currentUserEmail = obj.user.email;
+    }
     chrome.browserAction.setBadgeText({text: ""});
-    chrome.browserAction.setPopup({popup: ""});
+    chrome.browserAction.setPopup({popup: "ui/profile.html"});
     if (typeof(cbComplete) === "function") { cbComplete(true); }
   };
 
@@ -51,8 +54,9 @@ WfFbLogin.callback = function(obj) {
   console.debug("[Enter] WfFbLogin.callback() - obj[%o]", obj);
   if (obj.api_ret_code === 0 && obj.session_token) {
     localStorage.sessionToken = obj.session_token;
+    WfIsSessionTokenValid();    // Trigger /users/get to get email since callback did not provide email information
     chrome.browserAction.setBadgeText({text: ""});
-    chrome.browserAction.setPopup({popup: ""});
+    chrome.browserAction.setPopup({popup: "ui/profile.html"});
   }
   console.debug("[Leave] WfFbLogin.callback() - obj[%o]", obj);
 };
@@ -66,8 +70,34 @@ function WfIsSessionTokenValid(sessionToken) {
     apikey: g_WfSettings.apiKey,
     session_token: sessionToken
   };
-  var jqxhr = $.ajax({type:"POST", url: url, data: data, async: false, success: function(obj) {ret = true;}});
+  var jqxhr = $.ajax({type:"POST", url: url, data: data, async: false, success: function(obj) {
+    ret = true;
+    if (obj.user.email) {
+      localStorage.currentUserEmail = obj.user.email;
+    }
+  }});
 
   console.debug("[Leave] WfIsSessionTokenValid()");
+  return ret;
+}
+
+function WfLogout() {
+  console.debug("[Enter] WfLogout()");
+  if (localStorage.sessionToken) {
+    delete localStorage.sessionToken;
+    delete localStorage.currentUserEmail;
+    chrome.browserAction.setBadgeText({text: "!"});
+    chrome.browserAction.setPopup({popup: "ui/login.html"});
+  }
+  console.debug("[Leave] WfLogout()");
+}
+
+function WfGetCurrentUserEmail() {
+  console.debug("[Enter] WfGetCurrentUserEmail()");
+  var ret = null;
+  if (localStorage.currentUserEmail) {
+    ret = localStorage.currentUserEmail;
+  }
+  console.debug("[Leave] WfGetCurrentUserEmail()");
   return ret;
 }
