@@ -24,7 +24,7 @@ function WfLogin(email, password, cbComplete) {
   console.debug("[Leave] WfLogin() - email[%s]", email);
 }
 
-function WfFbLogin(cbComplete) {
+function WfFbLogin() {
   console.debug("[Enter] WfFbLogin()");
 
   // Refer: http://stackoverflow.com/questions/9719570/generate-random-password-string-with-requirements-in-javascript
