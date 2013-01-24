@@ -1,3 +1,4 @@
+/*
 function ReplayLocator() {
 };
 
@@ -41,13 +42,14 @@ ReplayLocator.generateRules = function() {
 
   return replayLocatorData;
 };
+*/
 
 
 
 
 function ContentManager() {
   this._monitorTimer = null;
-  this._replayDialogTimer = null;
+  //this._replayDialogTimer = null;
   this._isLoaded = false;
 
   this.enableMonitor = function() {
@@ -65,6 +67,7 @@ function ContentManager() {
     }
   };
 
+  /*
   this.onScroll = function(e) {
     // [0] Remove replay dialog
     if (this._replayDialog)
@@ -78,9 +81,7 @@ function ContentManager() {
     if (this._isLoaded)
       chrome.extension.sendMessage(null, {msg: "scroll", data: ReplayLocator.generateRules() });
   };
-
-  this.showReplayDialog = function(e) {
-  };
+  */
 };
 
 g_contentMgr = new ContentManager();
@@ -98,7 +99,7 @@ function contentMsgDispatcher(message, sender, cbSendResp) {
       cbSendResp({data: retData});
       return true;
     }
-  } else if (message.msg === "replayLocation") {
+  }/* else if (message.msg === "replayLocation") {
     g_contentMgr._replayDialog = $('<div id="dkcgmhmeeaalogijmpcjnfiphgpicbfa_replayDialog">' +
         '<div>' +
         '<p"><span>' + chrome.i18n.getMessage("replayDialog_desc") + '</span>' +
@@ -127,6 +128,7 @@ function contentMsgDispatcher(message, sender, cbSendResp) {
 
     //ReplayLocator.replayWithRules(message.replayLocatorData);
   }
+  */
 };
 
 chrome.extension.onMessage.addListener(contentMsgDispatcher);

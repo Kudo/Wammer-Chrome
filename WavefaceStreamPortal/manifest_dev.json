@@ -28,29 +28,14 @@
     },
     "browser_action": {
         "default_title": "Stream Visited Links (Dev)",
-        "default_icon": "StreamPortal_19.png",
-        "default_popup": "popups/login.html"
+        "default_icon": "StreamPortal_19.png"
     },
     "content_scripts": [
         {
             "matches": ["http://*/*", "https://*/*"],
             "js": ["lib/jquery.js", "ContentManager.js"],
-            "css": ["ReplayDialog.css"],
             "run_at": "document_start"
-        },
-        {
-            "matches": ["__WF_WEB_URL__/portal/"],
-            "js": ["bootstrap/js/bootstrap.min.js", "WebViewerHandler.js"],
-            "css": ["bootstrap/css/bootstrap.min.css"]
-        },
-        {
-            "matches": ["__WF_WEB_URL__/timeline"],
-            "js": ["TimelineHandler.js"]
         }
-    ],
-    "web_accessible_resources": [
-        "bootstrap/img/glyphicons-halflings.png",
-        "bootstrap/img/glyphicons-halflings-white.png"
     ],
     "update_url": "http://develop.waveface.com:4343/extensions/chrome/WavefaceStreamPortal/updates_dev.xml"
 }

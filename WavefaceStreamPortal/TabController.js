@@ -64,7 +64,6 @@ function ActionManager(options) {
   };
 
   this.geoLocation = {};
-  this.isLogon = false;
 
   this.getGeoLocation = function() {
     console.debug("[Enter] ActionManager.getGeoLocation().");
@@ -245,12 +244,6 @@ function ActionManager(options) {
     } else {
       chrome.browserAction.setBadgeText({text: ""});
     }
-  };
-
-  this.onClickBrowserAction = function(chromeTab) {
-    var portalUrl = g_WfSettings.webUrl + "/portal/";
-    portalUrl += "?client=ChromeExt&clientVer=" + g_WfSettings.version;
-    chrome.tabs.create({url: portalUrl});
   };
 
   this.isBlacklistUri = function(uri) {
@@ -584,7 +577,6 @@ TabManager.prototype.replayLocation = function(replayLocatorData) {
 
 
 chrome.extension.onMessage.addListener(extMsgDispatcher);
-chrome.browserAction.onClicked.addListener(g_actMgr.onClickBrowserAction.bind(g_actMgr));
 chrome.browserAction.setBadgeText({text: ""});
 
 chrome.tabs.onCreated.addListener(g_tabMgrContainer.onTabCreated.bind(g_tabMgrContainer));

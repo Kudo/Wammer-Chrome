@@ -45,7 +45,7 @@ function build_crx {
     replace_tag "$procDir/manifest.json" '__WF_WEB_URL__' $weburl
 
     if [ "$min" == "min" ]; then
-	for f in ContentManager.js HistoryExporter.js TabController.js TimelineHandler.js WebViewerHandler.js callback.js lib/wfSettings.js lib/wfAuth.js ui/js/login.js
+	for f in ContentManager.js HistoryExporter.js TabController.js callback.js lib/wfSettings.js lib/wfAuth.js ui/js/login.js
 	do
 	    f="$procDir/$f"
 	    sed -e '/console\.debug/d' $f > $f.tmp

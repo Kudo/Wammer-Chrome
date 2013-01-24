@@ -34,21 +34,7 @@
         {
             "matches": ["http://*/*", "https://*/*"],
             "js": ["lib/jquery.js", "ContentManager.js"],
-            "css": ["ReplayDialog.css"],
             "run_at": "document_start"
-        },
-        {
-            "matches": ["__WF_WEB_URL__/portal/"],
-            "js": ["bootstrap/js/bootstrap.min.js", "WebViewerHandler.js"],
-            "css": ["bootstrap/css/bootstrap.min.css"]
-        },
-        {
-            "matches": ["__WF_WEB_URL__/timeline"],
-            "js": ["TimelineHandler.js"]
         }
-    ],
-    "web_accessible_resources": [
-        "bootstrap/img/glyphicons-halflings.png",
-        "bootstrap/img/glyphicons-halflings-white.png"
     ]
 }
