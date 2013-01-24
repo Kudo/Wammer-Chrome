@@ -106,34 +106,26 @@ function ActionManager(options) {
     console.debug("[Enter] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
 
     if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
+    if (!localStorage.sessionToken) { return; }
     if (this.isBlacklistUri(tabMgr.pageInfo.uri)) { return; }
 
     // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
 
     var actMgr = this;
-    var uri = g_WfSettings.webUrl + "/api";
-    uri += '?v=3&client=ChromeExt&clientVer=' + g_WfSettings.version;
+    var url = g_WfSettings.apiUrl + "sportal/feed";
     var data = {
-      feed_data: g_actMgr.composeFeedData(tabMgr)
+      apikey: g_WfSettings.apiKey,
+      session_token: localStorage.sessionToken,
+      feed_data: JSON.stringify(g_actMgr.composeFeedData(tabMgr))
     };
-    console.log("ActionManager.sendHeartBeat() - data[%o]", data);
-    var qs = "api=" + encodeURIComponent('/sportal/feed') + "&data=" + encodeURIComponent(JSON.stringify(data));
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", uri, true);
-    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onreadystatechange = function() {
-      if (xhr.status != 200) {
-        console.error("ActionManager.sendHeartBeat() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
-        actMgr.showWarningBadge();
-      } else if (xhr.status == 200) {
-        // FIXME: DO NOT send data everytime here
-        actMgr.showWarningBadge(false);
+    console.debug("ActionManager.sendHeartBeat() - data[%o]", data);
+    $.post(url, data).success(function(obj) {
         tabMgr.pageInfo._isFeedSent = true;
-      }
-    };
-    xhr.send(qs);
+      }).error(function(jqXHR) {
+        console.error("ActionManager.sendHeartBeat() - jqXHR return error - jqXHR.responseText[%s]", jqXHR.responseText);
+        actMgr.showWarningBadge();
+        chrome.browserAction.setPopup({popup: "ui/login.html"});
+      });
 
     console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
   };
@@ -142,13 +134,13 @@ function ActionManager(options) {
     console.debug("[Enter] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
 
     if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
+    if (!localStorage.sessionToken) { return; }
     if (this.isBlacklistUri(tabMgr.pageInfo.uri)) { return; }
 
     // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
 
     var actMgr = this;
-    var uri = g_WfSettings.webUrl + "/api";
-    uri += '?client=ChromeExt&clientVer=' + g_WfSettings.version;
+    var url = g_WfSettings.apiUrl + "sportal/track";
     var feedData = {
       uri: tabMgr.pageInfo.uri
     };
@@ -156,30 +148,21 @@ function ActionManager(options) {
       feedData.referrerId = tabMgr._referrerId;
     }
     var data = {
-      feed_data: feedData
+      apikey: g_WfSettings.apiKey,
+      session_token: localStorage.sessionToken,
+      feed_data: JSON.stringify(feedData)
     };
 
-    console.log("ActionManager.sendReferrerTrack() - data[%o]", data);
-    var qs = "api=" + encodeURIComponent('/sportal/track') + "&data=" + encodeURIComponent(JSON.stringify(data));
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", uri, true);
-    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onreadystatechange = function() {
-      if (xhr.status != 200) {
-        console.error("ActionManager.sendReferrerTrack() - Invalid xhr returned status. xhr.readyState[%d] xhr.status[%d]", xhr.readyState, xhr.status);
-        actMgr.showWarningBadge();
-      } else if (xhr.readyState == 4 && xhr.status == 200) {
-        // FIXME: DO NOT send data everytime here
-        actMgr.showWarningBadge(false);
-        resp = JSON.parse(xhr.responseText);
-        if (resp.referrerId) {
-          tabMgr._referrerId = resp.referrerId;
+    console.debug("ActionManager.sendReferrerTrack() - data[%o]", data);
+    $.post(url, data).success(function(obj) {
+        if (obj.referrerId) {
+          tabMgr._referrerId = obj.referrerId;
         }
-      }
-    };
-    xhr.send(qs);
+      }).error(function(jqXHR) {
+        console.error("ActionManager.sendReferrerTrack() - jqXHR return error - jqXHR.responseText[%s]", jqXHR.responseText);
+        actMgr.showWarningBadge();
+        chrome.browserAction.setPopup({popup: "ui/login.html"});
+      });
 
     console.debug("[Leave] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
   };
@@ -363,7 +346,7 @@ TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeT
   var tabMgr = this.get(chromeTab);
   if (!tabMgr) { return; }
   if (changeInfo.status == "loading") {
-      tabMgr.onPageLoading.bind(tabMgr);
+    tabMgr.onPageLoading.bind(tabMgr);
   }
   console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
 };
@@ -480,16 +463,18 @@ TabManager.prototype.onPageDomContentLoaded = function() {
   }
 
   chrome.tabs.get(this.tabId, function(chromeTab) {
-    if (!chromeTab.url.match(/^https?:\/\//)) { return; }
+    if (!chromeTab.url.match(/^https?:\/\//)) {
+      return;
+    }
 
     tabMgr.pageInfo.prevUri = "";
     if (tabMgr.pageInfo.uri) {
-        tabMgr.pageInfo.prevUri = tabMgr.pageInfo.uri;
+      tabMgr.pageInfo.prevUri = tabMgr.pageInfo.uri;
     } else if (chromeTab.openerTabId !== "undefined") {
-        chrome.tabs.get(chromeTab.openerTabId, function(openerChromeTab) {
-          if (!openerChromeTab.url.match(/^https?:\/\//)) { return; }
+      chrome.tabs.get(chromeTab.openerTabId, function(openerChromeTab) {
+        if (!openerChromeTab.url.match(/^https?:\/\//)) { return; }
           tabMgr.pageInfo.prevUri = openerChromeTab.url || "";
-        });
+      });
     }
 
     tabMgr.pageInfo.uri = chromeTab.url || "";
@@ -517,7 +502,9 @@ TabManager.prototype.onPageLoad = function() {
 
   var tabMgr = this;
   chrome.tabs.get(tabMgr.tabId, function(chromeTab) {
-    if (!chromeTab.url.match(/^https?:\/\//)) { return; }
+    if (!chromeTab.url.match(/^https?:\/\//)) {
+      return;
+    }
 
     tabMgr.pageInfo.favicon = chromeTab.favIconUrl || undefined;
 
@@ -535,7 +522,9 @@ TabManager.prototype.onPageLoad = function() {
 TabManager.prototype.onPageHashChange = function(newUri) {
   console.debug("[Enter] TabManager.onPageHashChange() - tabMgr.key[%s] newUri[%s]", this.key, newUri);
 
-  if (!newUri.match(/^https?:\/\//)) { return; }
+  if (!newUri.match(/^https?:\/\//)) {
+    return;
+  }
 
   this.pageInfo.prevUri = this.pageInfo.uri;
   this.pageInfo.uri = newUri;
