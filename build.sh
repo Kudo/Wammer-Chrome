@@ -54,6 +54,7 @@ function build_crx {
 	done
     fi
 
+    rm -rf "$procDir/ui/compass"
     crxmake --pack-extension="$procDir" --pack-extension-key="portal$dev.pem"
     mv -f "$procDir.crx" "output/$env-WavefaceStreamPortal-$version.crx"
 
