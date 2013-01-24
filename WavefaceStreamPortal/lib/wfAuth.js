@@ -61,7 +61,7 @@ function WfIsSessionTokenValid(sessionToken) {
   console.debug("[Enter] WfIsSessionTokenValid()");
   var ret = false;
 
-  var url = "https://develop.waveface.com/v3/users/get";
+  var url = g_WfSettings.apiUrl + "users/get";
   var data = {
     apikey: g_WfSettings.apiKey,
     session_token: sessionToken
