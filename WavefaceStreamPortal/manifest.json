@@ -6,8 +6,9 @@
     "background": {
         "scripts": [
           "lib/jquery.js",
-          "lib/wfAuth.js",
           "lib/moment.js",
+          "lib/wfSettings.js",
+          "lib/wfAuth.js",
           "TabController.js",
           "HistoryExporter.js"
         ]
@@ -37,12 +38,12 @@
             "run_at": "document_start"
         },
         {
-            "matches": ["__WFLINK__/portal/"],
+            "matches": ["__WF_WEB_URL__/portal/"],
             "js": ["bootstrap/js/bootstrap.min.js", "WebViewerHandler.js"],
             "css": ["bootstrap/css/bootstrap.min.css"]
         },
         {
-            "matches": ["__WFLINK__/timeline"],
+            "matches": ["__WF_WEB_URL__/timeline"],
             "js": ["TimelineHandler.js"]
         }
     ],

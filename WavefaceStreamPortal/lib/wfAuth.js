@@ -13,9 +13,9 @@ function WfLogin(email, password, cbComplete) {
     if (typeof(cbComplete) === "function") { cbComplete(false); }
   };
 
-  var authUrl = "https://develop.waveface.com/v3/auth/login";
+  var authUrl = g_WfSettings.apiUrl + "auth/login";
   var data = {
-    apikey: "578fd655-4e93-5d1e-9e74-13704835e9d4",
+    apikey: g_WfSettings.apiKey,
     email: email,
     password: password
   };
@@ -31,18 +31,17 @@ function WfFbLogin(cbComplete) {
   var csrfToken = Math.random().toString(36).slice(-8);
   localStorage.csrfToken = csrfToken;
 
-  var authUrl = "https://devweb.waveface.com/client/v3/sns/facebook/signin";
   var extId = chrome.i18n.getMessage("@@extension_id");
   var locale = chrome.i18n.getMessage("@@ui_locale");
   var data = {
-    api_key: "578fd655-4e93-5d1e-9e74-13704835e9d4",
+    api_key: g_WfSettings.apiKey,
     device: "windows",
     xurl: "chrome-extension://" + extId +  "/callback.html?handler=WfFbLogin&token=" + csrfToken + "&api_ret_code=%(api_ret_code)d&api_ret_message=%(api_ret_message)s&session_token=%(session_token)s",
     locale: locale,
-    show_tutorial: false,
+    show_tutorial: false
   };
-  var url = authUrl + "?" + $.param(data);
-  console.log(url);
+  var url = g_WfSettings.fbLoginUrl + "?" + $.param(data);
+  console.debug(url);
   chrome.windows.create({url: url, width: 500, height: 400, focused: true, type: "popup"});
 
   console.debug("[Leave] WfFbLogin()");
@@ -64,8 +63,8 @@ function WfIsSessionTokenValid(sessionToken) {
 
   var url = "https://develop.waveface.com/v3/users/get";
   var data = {
-    apikey: "578fd655-4e93-5d1e-9e74-13704835e9d4",
-    session_token: sessionToken,
+    apikey: g_WfSettings.apiKey,
+    session_token: sessionToken
   };
   var jqxhr = $.ajax({type:"POST", url: url, data: data, async: false, success: function(obj) {ret = true;}});
 

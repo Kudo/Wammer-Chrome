@@ -1,5 +1,5 @@
 function getExtInfo(oid, completeHandler) {
-  var uri = "__WFLINK__/api";
+  var uri = g_WfSettings.webUrl + "/api";
   var data = {
     api: "/sportal/get",
     data: JSON.stringify({

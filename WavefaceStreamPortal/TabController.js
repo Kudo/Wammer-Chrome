@@ -11,7 +11,7 @@ function installNotice(downloadUrl) {
     localStorage.version = details.version;
   }
 };
-installNotice("__WFLINK__/StreamPortal/welcome?client=ChromeExt&clientVer=__VERSION__");
+installNotice(g_WfSettings.webUrl + "/StreamPortal/welcome?client=ChromeExt&clientVer=" + g_WfSettings.version);
 
 var g_actMgr = new ActionManager();
 var g_tabMgrContainer = new TabManagerContainer();
@@ -56,13 +56,11 @@ function extMsgDispatcher(message, sender, cbSendResp) {
 };
 
 function ActionManager(options) {
-  this.wfWebUrl = "__WFLINK__";
-
   this.options = {
     screenshotFormat: (options && options.screenshotFormat) || "jpeg",
     screenshotQuality: (options && options.screenshotQuality) || 50,
     // FIXME: configuable 5 secs
-    clientHeartbeatTheshold: (options && options.clientHeartbeatTheshold) || __HEARTBEAT_RATE__
+    clientHeartbeatTheshold: (options && options.clientHeartbeatTheshold) || g_WfSettings.clientHeartbeatTheshold
   };
 
   this.geoLocation = {};
@@ -91,7 +89,7 @@ function ActionManager(options) {
       referrer: tabMgr.pageInfo.prevUri,
       client: {
         name: "Stream Portal Chrome Extension",
-        version: "__VERSION__",
+        version: g_WfSettings.version,
         location: g_actMgr.geoLocation
       }
     };
@@ -114,8 +112,8 @@ function ActionManager(options) {
     // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
 
     var actMgr = this;
-    var uri = this.wfWebUrl + "/api";
-    uri += '?v=3&client=ChromeExt&clientVer=__VERSION__';
+    var uri = g_WfSettings.webUrl + "/api";
+    uri += '?v=3&client=ChromeExt&clientVer=' + g_WfSettings.version;
     var data = {
       feed_data: g_actMgr.composeFeedData(tabMgr)
     };
@@ -150,8 +148,8 @@ function ActionManager(options) {
     // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
 
     var actMgr = this;
-    var uri = this.wfWebUrl + "/api";
-    uri += '?client=ChromeExt&clientVer=__VERSION__';
+    var uri = g_WfSettings.webUrl + "/api";
+    uri += '?client=ChromeExt&clientVer=' + g_WfSettings.version;
     var feedData = {
       uri: tabMgr.pageInfo.uri
     }
@@ -250,14 +248,14 @@ function ActionManager(options) {
   };
 
   this.onClickBrowserAction = function(chromeTab) {
-    var portalUrl = this.wfWebUrl + "/portal/";
-    portalUrl += "?client=ChromeExt&clientVer=__VERSION__";
+    var portalUrl = g_WfSettings.webUrl + "/portal/";
+    portalUrl += "?client=ChromeExt&clientVer=" + g_WfSettings.version;
     chrome.tabs.create({url: portalUrl});
   };
 
   this.isBlacklistUri = function(uri) {
     // [0] Exclude waveface.com
-    var escapedLink = "__WFLINK__".replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+    var escapedLink = g_WfSettings.webUrl.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
     var re = new RegExp(escapedLink, "g");
     if (uri.match(re)) {
       return true;
