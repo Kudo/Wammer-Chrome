@@ -7,13 +7,12 @@ function WfLogin(email, password, cbComplete) {
       localStorage.currentUserEmail = obj.user.email;
     }
     chrome.browserAction.setBadgeText({text: ""});
-    chrome.browserAction.setPopup({popup: "ui/profile.html"});
-    if (typeof(cbComplete) === "function") { cbComplete(true); }
+    if (typeof(cbComplete) === "function") { cbComplete(true, 0); }
   };
 
   var _cbError = function(jqXHR) {
     var err = JSON.parse(jqXHR.responseText);
-    if (typeof(cbComplete) === "function") { cbComplete(false); }
+    if (typeof(cbComplete) === "function") { cbComplete(false, err.api_ret_code); }
   };
 
   var authUrl = g_WfSettings.apiUrl + "auth/login";
@@ -56,7 +55,6 @@ WfFbLogin.callback = function(obj) {
     localStorage.sessionToken = obj.session_token;
     WfIsSessionTokenValid();    // Trigger /users/get to get email since callback did not provide email information
     chrome.browserAction.setBadgeText({text: ""});
-    chrome.browserAction.setPopup({popup: "ui/profile.html"});
   }
   console.debug("[Leave] WfFbLogin.callback() - obj[%o]", obj);
 };
@@ -87,7 +85,6 @@ function WfLogout() {
     delete localStorage.sessionToken;
     delete localStorage.currentUserEmail;
     chrome.browserAction.setBadgeText({text: "!"});
-    chrome.browserAction.setPopup({popup: "ui/login.html"});
   }
   console.debug("[Leave] WfLogout()");
 }

@@ -74,3 +74,13 @@ $button-bg-color: #78ca9c;
 	$button-bg-color: #6B82A8;
 	@include candy-button;
 }
+
+.sec-button {
+        $button-bg-color: #E9C394;
+        @include candy-button;
+}
+
+.danger-button {
+        $button-bg-color: #dc5858;
+        @include candy-button;
+}

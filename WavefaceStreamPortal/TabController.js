@@ -124,7 +124,6 @@ function ActionManager(options) {
       }).error(function(jqXHR) {
         console.error("ActionManager.sendHeartBeat() - jqXHR return error - jqXHR.responseText[%s]", jqXHR.responseText);
         actMgr.showWarningBadge();
-        chrome.browserAction.setPopup({popup: "ui/login.html"});
       });
 
     console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
@@ -161,7 +160,6 @@ function ActionManager(options) {
       }).error(function(jqXHR) {
         console.error("ActionManager.sendReferrerTrack() - jqXHR return error - jqXHR.responseText[%s]", jqXHR.responseText);
         actMgr.showWarningBadge();
-        chrome.browserAction.setPopup({popup: "ui/login.html"});
       });
 
     console.debug("[Leave] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
@@ -208,14 +206,12 @@ function ActionManager(options) {
     if (localStorage.sessionToken) {
       if (WfIsSessionTokenValid(localStorage.sessionToken)) {
         this.showWarningBadge(false);
-        chrome.browserAction.setPopup({popup: "ui/profile.html"});
         return true;
       } else {
         delete localStorage.sessionToken;
       }
     }
     this.showWarningBadge();
-    chrome.browserAction.setPopup({popup: "ui/login.html"});
     return false;
   };
 

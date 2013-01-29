@@ -1,19 +1,40 @@
 $base-font-size: 15px;
 $base-line-height:18px;
+$link-color: #BC522B;
 
 @import "compass/css3/box-sizing";
 @import "compass/utilities/general/clearfix";
 @import "compass/css3/transition";
+@import "compass/css3/text-shadow";
+@import "lib/font-awesome";
+@import "lib/animate";
+@import "text";
 @import "button";
 @import "form";
+@import "message";
+
+.clear {
+    clear: both;
+}
+
+.clearfix {
+    @include pie-clearfix;
+}
+
+.hide {
+    display: none;
+}
+
+body {
+    background-color: #E1E1E1;
+}
 
 #login {
-    width: 300px;
-    height: 300px;
+    width: 250px;
 
     .facebook-login {
         position: relative;
-        margin-top: 10px;
+        margin: 30px 0 20px 0;
 
         .submit {
             text-align: center;
@@ -49,15 +70,15 @@ $base-line-height:18px;
     }
 
     .gray-box {
-        background-color: #fcfcfc;
-        border: 1px solid #eee;
-        padding: 10px 20px;
+        background: transparent;
+        border: none;
+        padding: 0px;
     }
 
     .or {
         text-align: center;
         padding: 5px;
-        color: #ccc;
+        color: #E17C99;
     }
 
     input[type="submit"], input[type="text"], input[type="password"], input[type="email"] {

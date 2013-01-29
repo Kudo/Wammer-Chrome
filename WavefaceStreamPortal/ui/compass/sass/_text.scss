@@ -1,0 +1,152 @@
+* {
+	word-wrap: break-word;
+}
+body {
+	-webkit-font-smoothing: antialiased;
+	font-size: $base-font-size;
+	font-family: Helvetica, sans-serif;
+	color: #222;
+}
+a {
+	color: $link-color;
+
+	&:hover {
+		color: darken($link-color, 10%);
+	}
+}
+b {
+	font-weight: bold;
+}
+i {
+	font-style: italic;
+}
+em {
+	font-style: italic;
+	color: #c00;	
+}
+strong {
+	font-weight: bold;
+	color: #c00;	
+}
+
+p,ul {
+	line-height: 1.35;
+	margin: $base-line-height/2 0;
+}
+
+li {
+	margin: $base-line-height/3 0;
+}
+
+h2 {
+	font-size: 24px;
+	font-weight: bold;
+	margin: 30px 0 20px;
+}
+h3 {
+	font-size: 18px;
+	font-weight: bold;
+	margin: 20px 0 10px;
+	
+}
+.content {
+
+	h2 {
+		font-size: 24px;
+		font-weight: bold;
+		color: #D6751D;
+		@include text-shadow(0 1px #fff);
+	}
+	h3 {
+		font-size: 18px;
+		font-weight: bold;
+		color: #444;
+	}
+	li {
+			margin-left: 1.5em ;		
+	}
+	ul {
+		li {
+			list-style-type: square;
+		}
+	}	
+	ol {
+		li {
+			list-style-type: decimal;
+		}
+	}
+}
+
+.doc-content {
+	@extend .content;
+
+	margin: 40px 0;
+	background-color: #fff;
+	padding: 40px 60px;
+	border: 1px solid #ccc;
+}
+
+.note {
+	font-size: 0.9em;
+	color: #928D72;
+}
+
+.important-note {
+	@extend .note;
+	color: #c00;	
+	background-color: lighten(#c00, 55%);
+
+	a {
+		margin: 0 5px;
+	}
+}
+
+.js {
+	.ajax-hide {
+		display: none;
+	}
+}
+
+.font-icon {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    line-height: inherit;
+    vertical-align: baseline;
+    background-image: none;
+    background-position: 0% 0%;
+    background-repeat: repeat;
+
+    font-family: FontAwesome;
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    text-decoration: inherit;
+    margin-right: 5px;
+
+}
+
+.doc {
+
+	h1 {
+		font-size: 36px;
+	}
+
+	h2 {
+		font-size: 24px;
+		margin-top: 20px;
+	}
+	
+	h1:first-child,h2:first-child {
+		margin-top: 10px;
+	}
+
+	li {
+		list-style-type: square;
+		margin-left: 20px;
+	}
+	p, ul {
+		margin: $base-line-height 0;
+	}
+}
+

@@ -5,7 +5,8 @@
     "manifest_version": 2,
     "background": {
         "scripts": [
-          "lib/jquery.js",
+          "lib/jquery/jquery.js",
+          "lib/jquery/purl.js",
           "lib/moment.js",
           "lib/wfSettings.js",
           "lib/wfAuth.js",
@@ -29,12 +30,12 @@
     "browser_action": {
         "default_title": "Stream Visited Links",
         "default_icon": "StreamPortal_19.png",
-        "default_popup": "ui/profile.html"
+        "default_popup": "ui/main.html"
     },
     "content_scripts": [
         {
             "matches": ["http://*/*", "https://*/*"],
-            "js": ["lib/jquery.js", "ContentManager.js"],
+            "js": ["lib/jquery/jquery.js", "ContentManager.js"],
             "run_at": "document_start"
         }
     ]
