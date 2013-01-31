@@ -33,9 +33,7 @@ define([
         rules : {
           email: { required: true, email: true },
           nickname: "required",
-          password: "wfpassword",
-          newPassword: "wfpassword",
-          confirmPassword: {wfpassword: true, equalTo: "#id_newPassword"}
+          password: "wfpassword"
         },
         wrapper: 'p',
         onkeyup: false,
