@@ -9,13 +9,13 @@ define([
   return Backbone.View.extend({
     id: 'home',
     events: {
-      'click #logout-button'            : 'logout',
+      'click #logout-button'            : 'logout'
+    },
+    initialize: function() {
+      this.userModel = window.WF.UserModel;
     },
     render: function() {
-      this.$el.html(M.render(Template));
-
-      // FIXME: Use Backbone model instead.
-      this.$('#email').text(WfGetCurrentUserEmail());
+      this.$el.html(M.render(Template, this.userModel.toJSON()));
 
       return this;
     },

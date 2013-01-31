@@ -3,7 +3,8 @@ define([
   'backbone',
   'wfAuth',
   'views/home',
-  'views/login'
+  'views/login',
+  'views/signup'
 ], function(_, Backbone) {
   return Backbone.Router.extend({ 
     routes: {
@@ -14,22 +15,31 @@ define([
     initialize: function() {
       this.main = $("#main");
     },
+    cleanView: function() {
+      if (window.WF.View) {
+        window.WF.View.undelegateEvents();
+        window.WF.View.remove();
+        delete window.WF.View;
+      }
+    },
     home: function() {
       if (!localStorage.sessionToken) {
         this.navigate('login', {trigger: true});
       } else {
         var HomeView = require('views/home');
-        HomeView = new HomeView();
-        this.main.html(HomeView.render().el);
+        window.WF.View = new HomeView();
+        this.main.html(window.WF.View.render().el);
       }
     },
     login: function() {
       var LoginView = require('views/login');
-      LoginView = new LoginView();
-      this.main.html(LoginView.render().el);
+      window.WF.View = new LoginView();
+      this.main.html(window.WF.View.render().el);
     },
     signup: function() {
-      console.log('signup');
-    },
+      var SignupView = require('views/signup');
+      window.WF.View = new SignupView();
+      this.main.html(window.WF.View.render().el);
+    }
   });
 });

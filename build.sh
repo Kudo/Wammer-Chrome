@@ -1,5 +1,15 @@
 #!/bin/sh
 
+JS_FILES_TO_MINIFY="callback.js
+ContentManager.js
+HistoryExporter.js
+TabController.js
+lib/wfSettings.js
+lib/wfAuth.js
+ui/js/*.js
+ui/js/views/*.js
+"
+
 major=`cat version | cut -d '.' -f1`
 minor=`cat version | cut -d '.' -f2`
 buildnum=`cat version | cut -d '.' -f3`
@@ -45,13 +55,15 @@ function build_crx {
     replace_tag "$procDir/manifest.json" '__WF_WEB_URL__' $weburl
 
     if [ "$min" == "min" ]; then
-	for f in ContentManager.js HistoryExporter.js TabController.js callback.js lib/wfSettings.js lib/wfAuth.js ui/js/login.js
+        currDir=`pwd`
+        cd $procDir
+	for f in $JS_FILES_TO_MINIFY
 	do
-	    f="$procDir/$f"
 	    sed -e '/console\.debug/d' $f > $f.tmp
-	    java -jar compiler.jar --js $f.tmp --js_output_file $f
+	    java -jar $currDir/compiler.jar --js $f.tmp --js_output_file $f
 	    rm -rf $f.tmp
 	done
+        cd $currDir
     fi
 
     rm -rf "$procDir/ui/compass"

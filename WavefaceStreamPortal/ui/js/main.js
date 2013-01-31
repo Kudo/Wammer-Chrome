@@ -12,17 +12,17 @@ requirejs.config({
 
     templates       : '../templates',
     wfSettings      : '../../lib/wfSettings',
-    wfAuth          : '../../lib/wfAuth',
+    wfAuth          : '../../lib/wfAuth'
   },
   shim: {
     jquery: {
       exports       : '$'
     },
     jqueryValidate: {
-      deps          : ['jquery'],
+      deps          : ['jquery']
     },
     jqueryPurl: {
-      deps          : ['jquery'],
+      deps          : ['jquery']
     },
     underscore: {
       exports       : '_'
@@ -32,10 +32,10 @@ requirejs.config({
       exports       : 'Backbone'
     },
     wfSettings: {
-      deps          : ['jquery'],
+      deps          : ['jquery']
     },
     wfAuth: {
-      deps          : ['jquery', 'jqueryPurl', 'wfSettings'],
+      deps          : ['jquery', 'jqueryPurl', 'wfSettings']
     }
   }
 //  urlArgs: '_rt=' + (new Date()).getTime() // for development
@@ -47,14 +47,18 @@ requirejs([
   'underscore',
   'backbone',
   'router',
-  'form'
+  'form',
+  'models/user'
 ], function(require, $, _, Backbone, Router) {
   $(function() {
     window.WF = {};
-    window.WF.AppRoutes = new Router();
-    Backbone.history.start();
-    
+    var WfUserModel = require('models/user')
+    window.WF.UserModel = new WfUserModel();
+
     var WfFormView = require('form');
     window.WF.FormBaseView = new WfFormView();
-  });
+
+    window.WF.AppRoutes = new Router();
+    Backbone.history.start();
+   });
 });

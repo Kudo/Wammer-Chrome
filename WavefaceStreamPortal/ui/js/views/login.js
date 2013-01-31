@@ -10,7 +10,7 @@ define([
     id: 'login',
     events: {
       'click #fb-login-link'            : 'fbLogin',
-      'click input[type="submit"]'      : 'nativeLogin',
+      'click input[type="submit"]'      : 'nativeLogin'
     },
     render: function() {
       this.$el.html(M.render(Template));
