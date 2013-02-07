@@ -1,0 +1,97 @@
+$base-font-size: 15px;
+$base-line-height:18px;
+$link-color: #BC522B;
+
+@import "compass/css3/box-sizing";
+@import "compass/utilities/general/clearfix";
+@import "compass/css3/transition";
+@import "compass/css3/text-shadow";
+@import "lib/font-awesome";
+@import "lib/animate";
+@import "text";
+@import "button";
+@import "form";
+@import "message";
+
+.clear {
+    clear: both;
+}
+
+.clearfix {
+    @include pie-clearfix;
+}
+
+.hide {
+    display: none;
+}
+
+body {
+    background-color: #E1E1E1;
+}
+
+#login {
+    width: 250px;
+
+    .facebook-login {
+        position: relative;
+        margin: 30px 0 20px 0;
+
+        .submit {
+            text-align: center;
+        }
+
+        .input {
+            max-width: 240px;
+            display: block;
+            margin: 5px auto;
+            text-align: left;
+        }
+
+        .en & .input {
+            max-width: 300px;
+        }
+
+        button.fb-button, a.fb-button {
+            position: relative;
+            padding-left: 30px;
+            img {
+                font-size: 24px;
+                position: absolute;
+                top:5px;
+                left:5px;
+            }
+        }
+
+        .fb-button {
+            width: 100%;
+            text-align: center;
+            @include box-sizing(border-box);
+        }
+    }
+
+    .gray-box {
+        background: transparent;
+        border: none;
+        padding: 0px;
+    }
+
+    .or {
+        text-align: center;
+        padding: 5px;
+        color: #E17C99;
+    }
+
+    input[type="submit"], input[type="text"], input[type="password"], input[type="email"] {
+        @include box-sizing(border-box);
+    }
+
+    .h-form {
+        margin-bottom: 0;
+    }
+}
+
+#page {
+    margin: 20px;
+}
+
+

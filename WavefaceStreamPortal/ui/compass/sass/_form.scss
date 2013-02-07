@@ -1,0 +1,94 @@
+@import "lib/form";
+
+$label-width: 240px;
+$input-width: 300px;
+
+.v-form {
+	@include form_layout;
+	@include form_style;
+	@include focus-states;
+
+	.forget-pw {
+		margin-top: -25px;
+	}
+
+	.errorlist {
+		font-size: 13px;
+		color: #900;
+		margin: -5px 0 0 $label-width + 10px ;
+
+		li {
+			margin:  0 0 10px;
+		}
+		label {
+			font-size: 13px;
+			font-weight: normal;
+			color: #900;
+			padding: 0;
+			text-align: left;
+			
+		}
+	}	
+
+}
+.h-form {
+	$input-width: 100%;
+
+	@include form_layout(stack);
+	@include form_style;
+	@include focus-states;
+
+	.forget-pw {
+		text-align: center;
+	}
+
+	.errorlist {
+		font-size: 13px;
+		color: #900;
+		margin: 0 ;
+
+		li {
+			margin:  0 0 10px;
+		}
+		label {
+			font-size: 13px;
+			font-weight: normal;
+			color: #900;
+			padding: 0;
+			text-align: left;
+			
+		}
+	}	
+
+}
+
+
+
+.error {
+
+	color: #900;
+	input[type="text"], input[type="password"], input[type="email"] {
+		border-color:#900;
+	}
+
+}
+
+
+.section-line {
+	border-top: 1px dotted #ccc;
+	text-align: center;
+	margin: 30px -20px 10px;
+	b {
+		color: #999;
+		background-color: #fff;
+		padding: 4px;
+		position: relative;
+		top: -10px;
+	}
+}
+
+.checkbox-click {
+
+	cursor: pointer;
+
+}

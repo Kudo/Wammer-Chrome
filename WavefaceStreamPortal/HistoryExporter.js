@@ -10,9 +10,8 @@
 function HistoryExporter() {
   //this.oldestDate = moment(new Date('2012/01/01'));
   this.oldestDate = moment().subtract('days', 14).startOf('day');
-  this.wfWebUrl = "__WFLINK__";
   this.histItemsToCloudTheshold = 500;
-};
+}
 
 HistoryExporter.prototype.composeFeedData = function(histItem) {
   var feedData = {
@@ -23,11 +22,11 @@ HistoryExporter.prototype.composeFeedData = function(histItem) {
     from: 'history',
     duration: 5,          // FIXME: currently hardcoded 5 seconds to force history data shown in portal site
     client: {
-      name: "Stream Portal Chrome Extension",
-      version: "__VERSION__"
+      name: g_WfSettings.extName,
+      version: g_WfSettings.extVersion
     }
   };
-  return feedData
+  return feedData;
 };
 
 HistoryExporter.prototype.sendFeedData = function() {
@@ -35,7 +34,7 @@ HistoryExporter.prototype.sendFeedData = function() {
   if (g_histItemsCount <= 0) { return; }
 
   var histExporter = this;
-  var uri = this.wfWebUrl + "/api";
+  var uri = g_WfSettings.webUrl + "/api";
   var dataList = [];
   for (var i = 0; i < g_histItemsCount; ++i) {
     dataList.push(this.composeFeedData(g_histItems[i]));
@@ -83,7 +82,7 @@ HistoryExporter.prototype.exportAll = function(portalTabId) {
         if (portalTabId) {
           chrome.tabs.executeScript(portalTabId, {code: "updateHistDialogProgress(" + _progress + ")"});
         }
-      }
+      };
     };
     this.exportFromDateRange(startDate, endDate, portalTabId, fComplete(progress));
   }

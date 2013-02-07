@@ -4,7 +4,15 @@
     "default_locale": "en",
     "manifest_version": 2,
     "background": {
-        "scripts": ["TabController.js", "moment.js", "HistoryExporter.js"]
+        "scripts": [
+          "lib/jquery/jquery.js",
+          "lib/jquery/purl.js",
+          "lib/moment.js",
+          "lib/wfSettings.js",
+          "lib/wfAuth.js",
+          "TabController.js",
+          "HistoryExporter.js"
+        ]
     },
     "permissions": [
         "tabs",
@@ -21,28 +29,15 @@
     },
     "browser_action": {
         "default_title": "Stream Visited Links (Dev)",
-        "default_icon": "StreamPortal_19.png"
+        "default_icon": "StreamPortal_19.png",
+        "default_popup": "ui/main.html"
     },
     "content_scripts": [
         {
             "matches": ["http://*/*", "https://*/*"],
-            "js": ["jquery.js", "ContentManager.js"],
-            "css": ["ReplayDialog.css"],
+            "js": ["lib/jquery/jquery.js", "ContentManager.js"],
             "run_at": "document_start"
-        },
-        {
-            "matches": ["__WFLINK__/portal/"],
-            "js": ["bootstrap/js/bootstrap.min.js", "WebViewerHandler.js"],
-            "css": ["bootstrap/css/bootstrap.min.css"]
-        },
-        {
-            "matches": ["__WFLINK__/timeline"],
-            "js": ["TimelineHandler.js"]
         }
-    ],
-    "web_accessible_resources": [
-        "bootstrap/img/glyphicons-halflings.png",
-        "bootstrap/img/glyphicons-halflings-white.png"
     ],
     "update_url": "http://develop.waveface.com:4343/extensions/chrome/WavefaceStreamPortal/updates_dev.xml"
 }
