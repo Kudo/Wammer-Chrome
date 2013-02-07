@@ -77,7 +77,7 @@ rm -rf output
 mkdir -p output
 build_crx 'support.Portal@waveface.com' 'https:\/\/staging.waveface.com'  'http:\/\/staging.waveface.com' $version 'staging' '' ''
 build_crx 'develop.Portal@waveface.com' 'https:\/\/develop.waveface.com'  'https:\/\/devweb.waveface.com' $version 'develop' 'Dev' ''
-#build_crx 'develop.Portal@waveface.com' 'https:\/\/develop.waveface.com' http:\/\/localhost:9090' $version 'local' 'Dev' ''
+build_crx 'develop.Portal@waveface.com' 'http:\/\/localhost:8082' 'http:\/\/localhost:9090' $version 'local' 'Dev' ''
 build_crx 'support.Portal@waveface.com' 'https:\/\/api.waveface.com'  'https:\/\/waveface.com' $version 'production' '' 'min'
 
 cp -f updates.xml output/

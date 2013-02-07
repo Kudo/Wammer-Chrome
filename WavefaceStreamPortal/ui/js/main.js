@@ -47,10 +47,13 @@ requirejs([
   'underscore',
   'backbone',
   'router',
+  'wfSettings',
   'form',
   'models/user'
 ], function(require, $, _, Backbone, Router) {
   $(function() {
+    $.ajaxSetup({headers: {"waveface-stream": g_WfSettings.extName + "/" + g_WfSettings.extVersionWithMaintainBuild }});
+
     window.WF = {};
     var WfUserModel = require('models/user')
     window.WF.UserModel = new WfUserModel();

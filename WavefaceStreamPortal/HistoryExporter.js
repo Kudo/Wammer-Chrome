@@ -22,8 +22,8 @@ HistoryExporter.prototype.composeFeedData = function(histItem) {
     from: 'history',
     duration: 5,          // FIXME: currently hardcoded 5 seconds to force history data shown in portal site
     client: {
-      name: "Stream Portal Chrome Extension",
-      version: g_WfSettings.version
+      name: g_WfSettings.extName,
+      version: g_WfSettings.extVersion
     }
   };
   return feedData;

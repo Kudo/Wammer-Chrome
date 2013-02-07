@@ -10,8 +10,18 @@ function WfSettings() {
   this.fbLoginUrl = this.webUrl + "/client/v3/sns/facebook/signin";
 
   /* Extension settings */
-  this.version = "__VERSION__";
-  this.clientHeartbeatTheshold = 5;
+  this.extName = "Chrome Extension - Portal";
+  this.extVersion = "__VERSION__";
+  this.extVersionWithMaintainBuild = (function(version) {
+    var verList = version.split(".");
+    verList.splice(2, 0, 0);
+    return verList.join(".");
+  })(this.extVersion);
+  this.collectTheshold = {
+    host: 10,
+    page: 10,
+    fixedPos: 3
+  };
 }
 
 g_WfSettings = new WfSettings();

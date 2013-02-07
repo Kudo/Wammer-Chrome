@@ -24,15 +24,6 @@ function extMsgDispatcher(message, sender, cbSendResp) {
     tabMgr.onHeartbeat();
   } else if (message.msg === "scroll") {
     tabMgr.onScroll(message.data);
-  } else if (message.msg === "openPage") {
-    chrome.tabs.create({url: message.url}, function(newTab) {
-      var tabMgr = g_tabMgrContainer.get(newTab);
-      if (!tabMgr) {
-        console.error("callback before new TabManager create. newTab[%o]", newTab);
-      } else {
-        tabMgr.initReplayLocator = message.replayLocatorData;
-      }
-    });
   } else if (message.msg === "pageOnDomContentLoaded") {
     tabMgr.onPageDomContentLoaded();
   } else if (message.msg === "pageOnLoad") {
@@ -59,8 +50,7 @@ function ActionManager(options) {
   this.options = {
     screenshotFormat: (options && options.screenshotFormat) || "jpeg",
     screenshotQuality: (options && options.screenshotQuality) || 50,
-    // FIXME: configuable 5 secs
-    clientHeartbeatTheshold: (options && options.clientHeartbeatTheshold) || g_WfSettings.clientHeartbeatTheshold
+    collectTheshold: (options && options.collectTheshold) || g_WfSettings.collectTheshold
   };
 
   this.geoLocation = {};
@@ -82,19 +72,17 @@ function ActionManager(options) {
       uri: tabMgr.pageInfo.uri,
       title: tabMgr.pageInfo.title,
       //startTime: tabMgr.pageInfo.startTime,
-      duration: tabMgr.pageInfo.duration,
       favicon: tabMgr.pageInfo.favicon,
-      extInfo: tabMgr.pageInfo.extInfo,
+      //extInfo: tabMgr.pageInfo.extInfo,
       referrer: tabMgr.pageInfo.prevUri,
       client: {
-        name: "Stream Portal Chrome Extension",
-        version: g_WfSettings.version,
+        name: g_WfSettings.extName,
+        version: g_WfSettings.extVersion,
         location: g_actMgr.geoLocation
       }
     };
     if (tabMgr.pageInfo.screenshots) {
-      // FIXME: Support multiple screenshots
-      feedData.screenshot = tabMgr.pageInfo.screenshots[0];
+      feedData.screenshots = tabMgr.pageInfo.screenshots;
 
       tabMgr.pageInfo.screenshots = null;   // Set as null to prevent sending screenshot many times.
     }
@@ -166,7 +154,7 @@ function ActionManager(options) {
   };
 
   this.captureScreenshot = function(tabMgr, capturePos, completeHandler) {
-    console.debug("[Enter] ActionManager.captureVisibleTab(). tabMgr.key[%s] capturePos[%s]", tabMgr.key, capturePos);
+    console.debug("[Enter] ActionManager.captureScreenshot(). tabMgr.key[%s] capturePos[%s]", tabMgr.key, capturePos);
     if (tabMgr.pageInfo.screenshots === null) {
       return;
     }
@@ -186,20 +174,18 @@ function ActionManager(options) {
             tabMgr.pageInfo.screenshots = [];
           }
 
-          if (capturePos === "head") {
-            tabMgr.pageInfo.screenshots.push({
-              "mimeType": mimeType,
-              "data": base64Data,
-              "size": base64Data.length,
-              "pos": capturePos
-            });
-          }
+          tabMgr.pageInfo.screenshots.push({
+            "mimeType": mimeType,
+            "data": base64Data,
+            "size": base64Data.length,
+            "position": capturePos
+          });
 
           if (typeof(completeHandler) === "function") { completeHandler(); }
         }
       }
     });
-    console.debug("[Leave] ActionManager.captureVisibleTab(). tabMgr.key[%s] capturePos[%s]", tabMgr.key, capturePos);
+    console.debug("[Leave] ActionManager.captureScreenshot(). tabMgr.key[%s] capturePos[%s]", tabMgr.key, capturePos);
   };
 
   this.checkLogon = function() {
@@ -392,7 +378,7 @@ TabManagerContainer.prototype.updateActiveTab = function() {
         // If user open tabs in background, we will only be able to capture screenshot lately when user select the tab as foreground.
         // Otherwise, if user never set the tab as foreground, we don't have chance to capture the screenshot.
         //
-        g_actMgr.captureScreenshot(currActiveTab);
+        g_actMgr.captureScreenshot(currActiveTab, "head");
       }
 
       // [1-2] Enable monitor
@@ -429,18 +415,23 @@ TabManager.prototype.disableMonitor = function() {
 
 TabManager.prototype.onHeartbeat = function() {
   console.debug("[Enter] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
-  this.pageInfo.duration += 1;
-  if (this.pageInfo.duration > g_actMgr.options.clientHeartbeatTheshold) {
-    g_actMgr.sendHeartBeat(this);
-    this.disableMonitor();
+  this.pageInfo.duration.page += 1;
+  if (this.pageInfo._isScrolled) {
+    this.pageInfo.duration.fixedPos += 1;
   }
+  this.sendFeed();
   console.debug("[Leave] TabManager.onHeartbeat() - tabMgr.key[%s]", this.key);
 };
 
-TabManager.prototype.onScroll = function(replayLocatorData) {
-  console.debug("[Enter] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
-  this.pageInfo.extInfo.replayLocator = replayLocatorData;
-  console.debug("[Leave] TabManager.onScroll() - tabMgr.key[%s] replayLocatorData[%o]", this.key, replayLocatorData);
+TabManager.prototype.onScroll = function(scrollData) {
+  console.debug("[Enter] TabManager.onScroll() - tabMgr.key[%s] scrollData[%o]", this.key, scrollData);
+  var scrollTop = scrollData.scrollTop;
+  if (this._scrollTop !== scrollTop) {
+    this._scrollTop = scrollTop;
+    this.pageInfo.duration.fixedPos = 0;
+  }
+  this.pageInfo._isScrolled = true;
+  console.debug("[Leave] TabManager.onScroll() - tabMgr.key[%s] scrollData[%o]", this.key, scrollData);
 };
 
 TabManager.prototype.onPageLoading = function() {
@@ -476,19 +467,16 @@ TabManager.prototype.onPageDomContentLoaded = function() {
     tabMgr.pageInfo.uri = chromeTab.url || "";
     tabMgr.pageInfo.title = chromeTab.title || "";
     tabMgr.pageInfo.startTime = new Date().toISOString();
-    tabMgr.pageInfo.duration = 0;
+    tabMgr.pageInfo.duration = {host: 0, page: 0, fixedPos: 0};
     tabMgr.pageInfo.extInfo = { version: 1 };
     tabMgr.pageInfo._isFeedSent = false;
+    tabMgr.pageInfo._isScrolled = false;
+    if (typeof(tabMgr.pageInfo.screenshots) !== "undefined") {
+      delete tabMgr.pageInfo.screenshots;
+    }
 
     g_actMgr.sendReferrerTrack(tabMgr);
   });
-
-  // [1] Check if open tab with replayLocator
-  if (tabMgr.initReplayLocator) {
-    console.info("TabManager.onPageDomContentLoaded() - initReplayLocator[%o]", tabMgr.initReplayLocator);
-    tabMgr.replayLocation(tabMgr.initReplayLocator);
-    delete tabMgr.initReplayLocator;
-  }
 
   console.debug("[Leave] TabManager.onPageDomContentLoaded() - tabMgr.key[%s]", this.key);
 };
@@ -508,7 +496,7 @@ TabManager.prototype.onPageLoad = function() {
       tabMgr.enableMonitor();
 
       // FIXME: race condition ? if change to another tab between this two statements?
-      g_actMgr.captureScreenshot(tabMgr);
+      g_actMgr.captureScreenshot(tabMgr, "head");
     }
   });
 
@@ -525,10 +513,11 @@ TabManager.prototype.onPageHashChange = function(newUri) {
   this.pageInfo.prevUri = this.pageInfo.uri;
   this.pageInfo.uri = newUri;
   this.pageInfo.startTime = new Date().toISOString();
-  this.pageInfo.duration = 0;
+  this.pageInfo.duration = {host: 0, page: 0, fixedPos: 0};
   this.pageInfo.extInfo = { version: 1 };
 
   this.pageInfo._isFeedSent = false;
+  this.pageInfo._isScrolled = false;
 
   var tabMgr = this;
   chrome.tabs.get(tabMgr.tabId, function(chromeTab) {
@@ -537,7 +526,7 @@ TabManager.prototype.onPageHashChange = function(newUri) {
     if (tabMgr === g_tabMgrContainer.getActiveTab()) {
       delete tabMgr.pageInfo.screenshots;
       // FIXME: race condition ? if change to another tab between this two statements?
-      g_actMgr.captureScreenshot(tabMgr);
+      g_actMgr.captureScreenshot(tabMgr, "head");
       tabMgr.enableMonitor();
     }
 
@@ -555,9 +544,19 @@ TabManager.prototype.execContentJsAsync = function(request, completeHandler) {
   chrome.tabs.executeScript(this.tabId, {code: request}, completeHandler);
 };
 
-TabManager.prototype.replayLocation = function(replayLocatorData) {
-  var message = { msg: "replayLocation", replayLocatorData: replayLocatorData};
-  chrome.tabs.sendMessage(this.tabId, message);
+TabManager.prototype.sendFeed = function() {
+  console.debug("[Enter] TabManager.sendFeed() - tabMgr.key[%s]", this.key);
+  console.debug("duration[%o]", this.pageInfo.duration);
+  if (this.pageInfo.duration.page > g_actMgr.options.collectTheshold.page &&
+     this.pageInfo.duration.fixedPos > g_actMgr.options.collectTheshold.fixedPos)
+  {
+    var tabMgr = this;
+    g_actMgr.captureScreenshot(tabMgr, "fixedPos", function() {
+      g_actMgr.sendHeartBeat(tabMgr);
+      tabMgr.disableMonitor();
+    });
+  }
+  console.debug("[Leave] TabManager.sendFeed() - tabMgr.key[%s]", this.key);
 };
 
 
@@ -583,3 +582,5 @@ chrome.windows.getAll({ populate: true }, function(windows) {
 g_actMgr.getGeoLocation();
 g_actMgr.checkLogon();
 setInterval(g_actMgr.getGeoLocation.bind(g_actMgr), 1800000);
+
+$.ajaxSetup({headers: {"waveface-stream": g_WfSettings.extName + "/" + g_WfSettings.extVersionWithMaintainBuild }});
