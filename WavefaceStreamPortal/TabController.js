@@ -24,12 +24,6 @@ function extMsgDispatcher(message, sender, cbSendResp) {
     tabMgr.onHeartbeat();
   } else if (message.msg === "scroll") {
     tabMgr.onScroll(message.data);
-  } else if (message.msg === "pageOnDomContentLoaded") {
-    tabMgr.onPageDomContentLoaded();
-  } else if (message.msg === "pageOnLoad") {
-    tabMgr.onPageLoad();
-  } else if (message.msg === "pageOnHashChange") {
-    tabMgr.onPageHashChange(message.data);
   } else if (message.msg === "captureScreenshot") {
     if (tabMgr === g_tabMgrContainer.getActiveTab()) {
       // FIXME: race condition ? if change to another tab between this two statements?
@@ -327,8 +321,10 @@ TabManagerContainer.prototype.onTabUpdated = function(tabId, changeInfo, chromeT
   console.debug("[Enter] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
   var tabMgr = this.get(chromeTab);
   if (!tabMgr) { return; }
-  if (changeInfo.status == "loading") {
-    tabMgr.onPageLoading.bind(tabMgr);
+  if (changeInfo.status === "loading") {
+    tabMgr.onPageLoading();
+  } else if (changeInfo.status === "complete") {
+    tabMgr.onPageLoad();
   }
   console.debug("[Leave] TabManagerContainer.onTabUpdated(). tabId[%s] changeInfo[%o] chromeTab[%o]", tabId, changeInfo, chromeTab);
 };
@@ -436,16 +432,11 @@ TabManager.prototype.onScroll = function(scrollData) {
 
 TabManager.prototype.onPageLoading = function() {
   console.debug("[Enter] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
-  console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
-};
-
-TabManager.prototype.onPageDomContentLoaded = function() {
-  console.debug("[Enter] TabManager.onPageDomContentLoaded() - tabMgr.key[%s]", this.key);
 
   var tabMgr = this;
 
   // [0] Initialize as new page
-  if (tabMgr.pageInfo === undefined) {
+  if (typeof(tabMgr.pageInfo) === "undefined") {
     tabMgr.pageInfo = {};
   }
 
@@ -457,7 +448,7 @@ TabManager.prototype.onPageDomContentLoaded = function() {
     tabMgr.pageInfo.prevUri = "";
     if (tabMgr.pageInfo.uri) {
       tabMgr.pageInfo.prevUri = tabMgr.pageInfo.uri;
-    } else if (chromeTab.openerTabId !== "undefined") {
+    } else if (typeof(chromeTab.openerTabId) !== "undefined") {
       chrome.tabs.get(chromeTab.openerTabId, function(openerChromeTab) {
         if (!openerChromeTab.url.match(/^https?:\/\//)) { return; }
           tabMgr.pageInfo.prevUri = openerChromeTab.url || "";
@@ -478,7 +469,7 @@ TabManager.prototype.onPageDomContentLoaded = function() {
     g_actMgr.sendReferrerTrack(tabMgr);
   });
 
-  console.debug("[Leave] TabManager.onPageDomContentLoaded() - tabMgr.key[%s]", this.key);
+  console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
 };
 
 TabManager.prototype.onPageLoad = function() {
@@ -501,38 +492,6 @@ TabManager.prototype.onPageLoad = function() {
   });
 
   console.debug("[Leave] TabManager.onPageLoad() - tabMgr.key[%s]", this.key);
-};
-
-TabManager.prototype.onPageHashChange = function(newUri) {
-  console.debug("[Enter] TabManager.onPageHashChange() - tabMgr.key[%s] newUri[%s]", this.key, newUri);
-
-  if (!newUri.match(/^https?:\/\//)) {
-    return;
-  }
-
-  this.pageInfo.prevUri = this.pageInfo.uri;
-  this.pageInfo.uri = newUri;
-  this.pageInfo.startTime = new Date().toISOString();
-  this.pageInfo.duration = {host: 0, page: 0, fixedPos: 0};
-  this.pageInfo.extInfo = { version: 1 };
-
-  this.pageInfo._isFeedSent = false;
-  this.pageInfo._isScrolled = false;
-
-  var tabMgr = this;
-  chrome.tabs.get(tabMgr.tabId, function(chromeTab) {
-    tabMgr.pageInfo.title = chromeTab.title || "";
-
-    if (tabMgr === g_tabMgrContainer.getActiveTab()) {
-      delete tabMgr.pageInfo.screenshots;
-      // FIXME: race condition ? if change to another tab between this two statements?
-      g_actMgr.captureScreenshot(tabMgr, "head");
-      tabMgr.enableMonitor();
-    }
-
-  });
-
-  console.debug("[Leave] TabManager.onPageHashChange() - tabMgr.key[%s] newUri[%s]", this.key, newUri);
 };
 
 TabManager.prototype.execContentJsSync = function(request, respHandler) {
@@ -574,7 +533,7 @@ chrome.windows.getAll({ populate: true }, function(windows) {
     for (var iTab = 0, iTabCount = windows[iWindow].tabs.length; iTab < iTabCount; ++iTab) {
       var tabMgr = new TabManager(windows[iWindow].tabs[iTab]);
       g_tabMgrContainer.add(tabMgr);
-      tabMgr.onPageDomContentLoaded();
+      tabMgr.onPageLoading();
     }
   }
 });
