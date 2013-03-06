@@ -1,18 +1,3 @@
-function installNotice(downloadUrl) {
-  var details = chrome.app.getDetails();
-  var prevVersion = localStorage.version;
-  if (details.version != prevVersion) {
-    if (typeof(prevVersion) === "undefined") {
-      console.log("Waveface Extension Installed");
-      chrome.tabs.create({url: downloadUrl});
-    } else {
-      console.log("Waveface Extension Updated");
-    }
-    localStorage.version = details.version;
-  }
-}
-installNotice(g_WfSettings.webUrl + "/StreamPortal/welcome?client=ChromeExt&clientVer=" + g_WfSettings.version);
-
 var g_actMgr = new ActionManager();
 var g_tabMgrContainer = new TabManagerContainer();
 
@@ -111,19 +96,24 @@ function ActionManager(options) {
     console.debug("[Leave] ActionManager.sendHeartBeat() - tabMgr.key[%s]", tabMgr.key);
   };
 
-  this.sendReferrerTrack = function(tabMgr) {
-    console.debug("[Enter] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
+  this.sendReferrerTrack = function(tabMgr, uri, completeHandler) {
+    console.debug("[Enter] ActionManager.sendReferrerTrack() - tabMgr.key[%s] uri[%s]", tabMgr.key, uri);
 
     if (typeof(tabMgr.pageInfo.uri) === "undefined") { return; }
     if (!localStorage.sessionToken) { return; }
     if (this.isBlacklistUri(tabMgr.pageInfo.uri)) { return; }
 
-    // FIXME: If not logon, should not send heartbeat here but later to consider how to know if user logon automatically?
+    var _uri;
+    if (typeof(uri) === "undefined") {
+      _uri = tabMgr.pageInfo.uri;
+    } else {
+      _uri = uri;
+    }
 
     var actMgr = this;
-    var url = g_WfSettings.apiUrl + "sportal/track";
+    var trackUrl = g_WfSettings.apiUrl + "sportal/track";
     var feedData = {
-      uri: tabMgr.pageInfo.uri
+      uri: _uri
     };
     if (tabMgr._referrerId) {
       feedData.referrerId = tabMgr._referrerId;
@@ -135,16 +125,17 @@ function ActionManager(options) {
     };
 
     console.debug("ActionManager.sendReferrerTrack() - data[%o]", data);
-    $.post(url, data).success(function(obj) {
+    $.post(trackUrl, data).success(function(obj) {
         if (obj.referrerId) {
           tabMgr._referrerId = obj.referrerId;
         }
+        if (typeof(completeHandler) === "function") { completeHandler(); }
       }).error(function(jqXHR) {
         console.error("ActionManager.sendReferrerTrack() - jqXHR return error - jqXHR.responseText[%s]", jqXHR.responseText);
         actMgr.showWarningBadge();
       });
 
-    console.debug("[Leave] ActionManager.sendReferrerTrack() - tabMgr.key[%s]", tabMgr.key);
+    console.debug("[Leave] ActionManager.sendReferrerTrack() - tabMgr.key[%s] uri[%s]", tabMgr.key, uri);
   };
 
   this.captureScreenshot = function(tabMgr, capturePos, completeHandler) {
@@ -441,18 +432,14 @@ TabManager.prototype.onPageLoading = function() {
   }
 
   chrome.tabs.get(this.tabId, function(chromeTab) {
+    var isNewTab = true;
+
     if (!chromeTab.url.match(/^https?:\/\//)) {
       return;
     }
 
-    tabMgr.pageInfo.prevUri = "";
     if (tabMgr.pageInfo.uri) {
-      tabMgr.pageInfo.prevUri = tabMgr.pageInfo.uri;
-    } else if (typeof(chromeTab.openerTabId) !== "undefined") {
-      chrome.tabs.get(chromeTab.openerTabId, function(openerChromeTab) {
-        if (!openerChromeTab.url.match(/^https?:\/\//)) { return; }
-          tabMgr.pageInfo.prevUri = openerChromeTab.url || "";
-      });
+      isNewTab = false;
     }
 
     tabMgr.pageInfo.uri = chromeTab.url || "";
@@ -466,7 +453,30 @@ TabManager.prototype.onPageLoading = function() {
       delete tabMgr.pageInfo.screenshots;
     }
 
-    g_actMgr.sendReferrerTrack(tabMgr);
+    var _sendReferrerTrack = function(tabMgr) {
+      if (!tabMgr._referrerId && tabMgr.pageInfo.prevUri) {
+        // For new tab case, we should still need to track referrer url.
+        // Code logic may be confused due to we reuse sendReferrerTrack().
+        g_actMgr.sendReferrerTrack(tabMgr, tabMgr.pageInfo.prevUri, function() {
+          g_actMgr.sendReferrerTrack(tabMgr);
+        });
+      } else {
+        g_actMgr.sendReferrerTrack(tabMgr);
+      }
+    };
+
+    tabMgr.pageInfo.prevUri = "";
+    if (!isNewTab) {
+      tabMgr.pageInfo.prevUri = tabMgr.pageInfo.uri;
+      _sendReferrerTrack(tabMgr);
+    } else if (typeof(chromeTab.openerTabId) !== "undefined") {
+      chrome.tabs.get(chromeTab.openerTabId, function(openerChromeTab) {
+        if (!openerChromeTab.url.match(/^https?:\/\//)) { return; }
+        tabMgr.pageInfo.prevUri = openerChromeTab.url || "";
+        _sendReferrerTrack(tabMgr);
+      });
+    }
+
   });
 
   console.debug("[Leave] TabManager.onPageLoading() - tabMgr.key[%s]", this.key);
