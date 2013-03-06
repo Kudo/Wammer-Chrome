@@ -23,13 +23,13 @@
     ],
     "description": "__MSG_extDesc__",
     "icons": {
-        "128": "StreamPortal_128.png",
-        "48": "StreamPortal_48.png",
-        "19": "StreamPortal_19.png"
+        "128": "icon128.png",
+        "48": "icon48.png",
+        "19": "icon19.png"
     },
     "browser_action": {
         "default_title": "Stream Visited Links (Dev)",
-        "default_icon": "StreamPortal_19.png",
+        "default_icon": "icon19.png",
         "default_popup": "ui/main.html"
     },
     "content_scripts": [
