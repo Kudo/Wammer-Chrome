@@ -1,6 +1,6 @@
 define({
   common: {
-    productName:                      'aostream'
+    productName:                      'aostream clipper'
   },
 
   home: {
