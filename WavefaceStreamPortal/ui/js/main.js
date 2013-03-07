@@ -19,7 +19,7 @@ requirejs.config({
   config: {
     i18n: {
       locale: chrome.i18n.getMessage('@@ui_locale')
-    },
+    }
   },
   shim: {
     jquery: {
