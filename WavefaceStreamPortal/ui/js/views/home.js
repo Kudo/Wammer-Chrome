@@ -4,8 +4,9 @@ define([
   'backbone',
   'mustache',
   'text!templates/home.html',
-  'wfAuth'
-], function($, _, Backbone, M, Template, WfAuth) {
+  'wfAuth',
+  'i18n!nls/uiI18n'
+], function($, _, Backbone, M, Template, WfAuth, uiI18n) {
   return Backbone.View.extend({
     id: 'home',
     events: {
@@ -15,7 +16,10 @@ define([
       this.userModel = window.WF.UserModel;
     },
     render: function() {
-      this.$el.html(M.render(Template, this.userModel.toJSON()));
+      var data = this.userModel.toJSON();
+      data.uiI18n = uiI18n;
+
+      this.$el.html(M.render(Template, data));
 
       return this;
     },

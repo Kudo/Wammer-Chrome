@@ -1,5 +1,5 @@
 {
-    "name": "Stream Visited Links - a better history (Dev)",
+    "name": "aostream clipper (Dev)",
     "version": "__VERSION__",
     "default_locale": "en",
     "manifest_version": 2,
@@ -28,7 +28,7 @@
         "19": "icon19.png"
     },
     "browser_action": {
-        "default_title": "Stream Visited Links (Dev)",
+        "default_title": "aostream clipper (Dev)",
         "default_icon": "icon19.png",
         "default_popup": "ui/main.html"
     },

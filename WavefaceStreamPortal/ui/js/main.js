@@ -9,10 +9,17 @@ requirejs.config({
     mustache        : '../../lib/mustache',
 
     text            : '../../lib/require/text',
+    i18n            : '../../lib/require/i18n',
+    nls             : '../../_locales',
 
     templates       : '../templates',
     wfSettings      : '../../lib/wfSettings',
     wfAuth          : '../../lib/wfAuth'
+  },
+  config: {
+    i18n: {
+      locale: chrome.i18n.getMessage('@@ui_locale')
+    },
   },
   shim: {
     jquery: {
